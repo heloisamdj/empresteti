@@ -1,4 +1,4 @@
-﻿# EmpresTI
+# EmpresTI
 
 Sistema que substitui a planilha de controle de empréstimo de equipamentos internos (notebooks, monitores, cabos, câmeras). Atende dois perfis: Colaborador — que consulta o catálogo, solicita itens e registra devolução — e Operações — que cadastra equipamentos e acompanha todos os empréstimos em aberto.
 
@@ -20,9 +20,9 @@ Negócio em `docs/PRD.md`. Stack decidida em `docs/adr/001-stack.md`.
 
 - rodar o projeto: `<COMANDO-DEV>`
 - rodar os testes: `<COMANDO-TESTES>`
-- buildar: `<COMANDO-BUILD>`
+- buildar: `npm run build` (gera o Prisma Client e executa o build do Next.js)
 
-Nenhum comando foi validado nesta máquina ainda. Preencha ao rodar pela primeira vez.
+Build validado nesta máquina em 19/10/2026. Os comandos de desenvolvimento e testes ainda não foram validados.
 
 ---
 
