@@ -33,3 +33,13 @@
 - <parte do plano>: skill <nome-da-skill> — atende CA-04 e CA-05
 - <outra parte>: skill <outra-skill>
 - Revisão de design antes do commit: skill <skill-de-revisao>
+
+## Correção do build — Prisma Client ausente
+
+Plano aprovado pelo usuário nesta conversa e aplicado em 19/10/2026 no repositório `heloisamdj/empresteti`, pasta `EmpresTI Helo/empresteti`.
+
+- Adicionados `prisma` e `@prisma/client` 6.19.3, compatíveis com o schema atual, com lockfile atualizado.
+- Build ajustado para `prisma generate && next build`.
+- `npm run build`: passou, incluindo geração do cliente e checagem TypeScript.
+- `npm run lint`: passou com um aviso preexistente de variável não utilizada em `docs/app.js`.
+- Nenhum seed, migration, acesso ao banco remoto ou deploy foi executado.
