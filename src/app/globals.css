@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+:root {
+  --page: #05070f;
+  --color-bg: #080c1a;
+  --sidebar-bg: #060a16;
+  --color-surface: #0e1530;
+  --surface-sunken: #0b1128;
+  --color-text: #e6eaf6;
+  --text-muted: #8a93b2;
+  --text-dim: #7c86a2;
+  --text-faint: #5e6884;
+  --text-ghost: #454e68;
+  --border-frame: #222c4a;
+  --border-card: #1f2949;
+  --border-soft: #1a2340;
+  --border-row: #161d33;
+  --border-strong: #2b3450;
+  --accent-100: #eef2fe;
+  --accent-200: #d6e0fb;
+  --accent-300: #b4c6f6;
+  --accent-400: #8aa6ee;
+  --accent-500: #5b7fe0;
+  --accent-600: #3c5dbe;
+  --accent-700: #25408f;
+  --accent-800: #132663;
+  --accent-900: #001449;
+  --status-available: #5fd3aa;
+  --status-maintenance: #e8b961;
+  --status-late: #f0a0a5;
+  --background: var(--color-bg);
+  --foreground: var(--color-text);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Open Sans", system-ui, sans-serif;
+  --font-mono: monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body { min-height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Open Sans", system-ui, sans-serif;
+  font-size: 14px;
+}
+
+button, input { font: inherit; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0ms !important;
+  }
+}
