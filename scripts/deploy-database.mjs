@@ -80,8 +80,12 @@ async function overview(db) {
     const sql = await readFile(
       `prisma/migrations/${row.migration_name}/migration.sql`,
     );
+    const lf = sql.toString("utf8").replace(/\r\n/g, "\n");
+    const checksums = [sql, lf, lf.replace(/\n/g, "\r\n")].map((value) =>
+      createHash("sha256").update(value).digest("hex"),
+    );
     check(
-      createHash("sha256").update(sql).digest("hex") === row.checksum,
+      checksums.includes(row.checksum),
       "Checksum remoto difere do arquivo versionado; nenhuma alteração aplicada.",
     );
   }

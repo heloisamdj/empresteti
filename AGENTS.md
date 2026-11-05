@@ -74,6 +74,7 @@ Next.js (App Router) · tRPC · Prisma · Supabase Auth + PostgreSQL · Tailwind
   de cada skill. Carregue o corpo do SKILL.md apenas quando a tarefa
   casar com a description; abra references/ só quando o SKILL.md mandar.
 - Em conflito, rules/ e docs/adr/ vencem qualquer skill.
+- Descoberta nativa no Codex: `.agents/skills/frontend-design` é um vínculo local para `skills/frontend-design`, sem segunda cópia. `allow_implicit_invocation: true`; o scanner confirmou `enabled: true`. O template não é ativado.
 ---
 
 ## Precedência

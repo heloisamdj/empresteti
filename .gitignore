@@ -21,5 +21,3 @@ test-results/
 .vercel/
 # Vínculos locais de descoberta; a fonte versionada fica em skills/.
 .agents/skills/
-.vercel
-.env*
