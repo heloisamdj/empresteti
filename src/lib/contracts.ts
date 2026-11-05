@@ -72,7 +72,7 @@ export const paginationInput = z
   })
   .strict()
   .default({ limit: 20 });
-export const MAX_ITEMS = 4;
+export const MAX_ITEMS = 3;
 export const LOAN_DAYS = 14;
 export function formatDate(value: Date | string) {
   const parts = new Intl.DateTimeFormat("pt-BR", {
