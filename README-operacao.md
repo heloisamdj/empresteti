@@ -50,7 +50,9 @@ O primeiro comando não imprime credenciais. Confere saúde de Auth, metadados d
 
 O `.env` existente aponta Auth para fobuhqvjheblmwbiwera, enquanto o link de painel enviado aponta a pkncugbogwvxyulbngjr. Por orientação do usuário, a cópia local e a Vercel são prioritárias. Não foi feita troca de projeto nem reaproveitamento de chave em outro endereço.
 
-`DATABASE_URL` e `DIRECT_URL` existentes são locais. Para produção, a pessoa responsável deve conferir as conexões do projeto correto e as variáveis privadas na Vercel, revisar a migration e só então autorizar a publicação. Este trabalho não executa push/deploy nem migrations remotas.
+O usuário autorizou posteriormente publicação e integração. A branch de implementação foi enviada ao GitHub e houve tentativas de prévia na Vercel, sem promoção do domínio principal nem migrations remotas. O preflight confirmou que as duas conexões da produção também apontam para `localhost`; precisam ser corrigidas para o Supabase fobuhqvjheblmwbiwera. Estado, autorizações e evidências atualizados em `docs/publicacao.md`.
+
+A skill visual está disponível para seleção automática no Codex por vínculos locais em `.agents/skills/frontend-design`, apontando para a única fonte em `skills/frontend-design`. O scanner nativo confirmou ativação e foram realizadas provas independentes de seleção positiva e negativa (aula 10), registradas em `docs/auditoria-skills-mcp.md`.
 
 ## Decisões e auditoria
 

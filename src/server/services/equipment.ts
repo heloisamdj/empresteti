@@ -22,7 +22,7 @@ export async function listEquipment(
       { patrimony: { contains: input.search, mode: "insensitive" } },
     ],
   };
-  const [rows, total] = await Promise.all([
+  const [rows, total, availableCount] = await Promise.all([
     db.equipment.findMany({
       where,
       orderBy:
@@ -39,10 +39,22 @@ export async function listEquipment(
       },
     }),
     db.equipment.count({ where }),
+    db.equipment.count({
+      where: {
+        ...where,
+        status: "AVAILABLE",
+        loans: { none: { returnedAt: null } },
+      },
+    }),
   ]);
   const more = rows.length > input.limit;
   if (more) rows.pop();
-  return { items: rows, total, nextCursor: more ? rows.at(-1)?.id : undefined };
+  return {
+    items: rows,
+    total,
+    availableCount,
+    nextCursor: more ? rows.at(-1)?.id : undefined,
+  };
 }
 export async function equipmentDetail(
   db: TenantDb,

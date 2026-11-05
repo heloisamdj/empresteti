@@ -1,11 +1,13 @@
 # Handoff — 04/11/2026
 
-1. Onde parei: tarefas 1–10 da spec 001 implementadas e verificadas localmente; seis telas, tRPC, Auth no servidor, persistência e devolução em duas etapas. Auditoria em docs/auditoria-aulas.md.
-   Verificador independente: PRONTA localmente (CA-01…12); relatório em docs/specs/001-frontend/verificacao.md. Não comprova produção.
-2. Git: branch fix/prisma-build; último commit db62df7 (prisma). Nenhum commit ou push novo; implementação está no working tree. Alterações anteriores em AGENTS.md, spec-flow.md e agents/ foram preservadas.
-3. Banco local: migrations 0001 e 0002 e seed suporte_ti aplicados em empresti-helo-dev (PostgreSQL 16, localhost:5433). .env.local ignorado aponta a ele. O banco de MLOps na porta 5432 foi preservado.
-4. Checks: estrutura, lint (um aviso preexistente), tipos, 19 Vitest, build e dez Playwright passaram. Após correção final de movimento: novo build e CA-12 passaram. Testes usam banco descartável; provider/contexto de identidade são simulados nos testes, sem bypass no app.
-5. Publicação: nenhuma. Vercel empresteti-hzyj.vercel.app continua com placeholder em / e 404 nas novas rotas.
-6. Referência correta: cópia local + Vercel, conforme usuário. .env original preservado, Auth fobuhqvjheblmwbiwera; link pkncugbogwvxyulbngjr não autoriza troca. Auth respondeu 200; conexão PostgreSQL remota e login real não foram comprovados.
-7. NÃO aplicar migration no remoto, trocar chaves/projeto, fazer deploy ou gerar login fictício. Não confundir teste com prova de conta real. No Windows, encerrar testes antes de regenerar Prisma no build.
-8. Próximo passo: conferir usuário convidado/vínculo e configuração privada do Supabase/Vercel correto antes de preparar publicação; executar as provas isoladas da skill da aula 10 em sessões novas.
+1. Tarefa ativa: usuário autorizou publicar na Vercel, integrar Supabase e ativar skills. Local funciona; publicação ainda depende da configuração remota. Detalhes em docs/publicacao.md.
+2. Git: fix/prisma-build enviada ao GitHub; base f66add3/1a31b67 rebased sobre origin/main, seguida das correções finais de catálogo e registros. Noreply da conta heloisamdj resolveu bloqueio de autoria na Vercel; nenhuma alteração enviada à main.
+3. Banco local: migrations 0001/0002 e seed suporte_ti aplicados em empresti-helo-dev, Postgres16 localhost:5433; MLOps5432 preservado. Nenhuma migration remota aplicada.
+4. Checks após correções: estrutura, lint (um aviso antigo), tipos,19Vitest,build,10Playwright passaram. E2E usa contexto de identidade simulado; não comprova login real.
+5. Vercel: projeto empresteti-hzyj (prj_zaWeyVUhtZaqE4GH8SOfl6N4AsWm), equipe helo-98ee. CLI autorizado. Prévias --prod --skip-domain falharam no preflight; domínio principal continua antigo.
+6. Causa confirmada: Vercel usa Auth fobuhqvjheblmwbiwera e DATABASE_URL/DIRECT_URL localhost. Variáveis sensitive não podem ser recuperadas por API; não tentar contornar. Uso normal pelo job mantém valores na plataforma, sem exportação.
+7. Supabase: navegador integrado funcionou; usuário logou como heloisamdj. Só consta projeto pkncugbogwvxyulbngjr, originalmente pausado e ligado ao repo antigo emprestimoTI. Usuário AUTORIZOU usar e reativar esse projeto; reativação solicitada, estado Coming up. Isso substitui a orientação anterior de não trocar fobuh.
+8. Próximo: obter/configurar conexões e URL/chave pública DO PROJETO pkn... sem divulgar valores, conferir banco existente e provisionamento da conta real, resolver job de migration conforme ADR001 §9 antes de executar e só promover após sucesso.
+9. Job scripts/deploy-database.mjs é explícito, não boot; guarda ID Vercel, referências/schema/banco idênticos, checksums e ausência de reset. Modo migrate ainda NÃO executado. ADR prevê GitHubActions; exceção Vercel ainda não resolvida.
+10. Skills: frontend-design enabledtrue no scanner nativo; Junctions .agents/skills apontam à fonte única skills/. Provas independentes positiva e negativa concluídas; template não ativado. Ver docs/auditoria-skills-mcp.md.
+11. NÃO mudar senha do banco, sobrescrever schema existente, reutilizar chaves fobuh no pkn, imprimir segredos ou confundir prévia com publicação concluída. No Windows, encerrar testes antes de regenerar Prisma.

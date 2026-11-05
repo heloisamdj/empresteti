@@ -92,9 +92,11 @@ export function StatusPill({
 export function Notice({
   children,
   error = false,
+  className,
 }: {
   children: ReactNode;
   error?: boolean;
+  className?: string;
 }) {
   return (
     <div
@@ -104,11 +106,12 @@ export function Notice({
         error
           ? "border-rose-400/30 bg-rose-400/5 text-[var(--status-late)]"
           : "border-[var(--accent-700)] bg-[var(--surface-sunken)] text-[var(--text-muted)]",
+        className,
       )}
     >
       <Icon
         name={error ? "warning-circle" : "info"}
-        className="mt-0.5 text-lg"
+        className="mt-0.5 text-[17px]"
       />
       <div>{children}</div>
     </div>

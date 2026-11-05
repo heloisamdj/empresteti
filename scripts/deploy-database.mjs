@@ -149,6 +149,14 @@ try {
     "Auth não aponta ao Supabase.",
   );
   const authRef = authUrl.hostname.split(".")[0];
+  console.log(
+    JSON.stringify({
+      job: mode,
+      authProject: authRef,
+      configuredRuntimeHost: new URL(process.env.DATABASE_URL).hostname,
+      configuredDirectHost: new URL(process.env.DIRECT_URL).hostname,
+    }),
+  );
   const runtimeInfo = connection(process.env.DATABASE_URL, authRef);
   const directInfo = connection(process.env.DIRECT_URL, authRef);
   check(

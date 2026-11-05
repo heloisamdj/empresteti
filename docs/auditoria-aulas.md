@@ -43,11 +43,11 @@ São detalhes de execução dos comportamentos já aprovados na spec, sem nova p
 - Login contra conta real: depende de usuário convidado existente e associação user/membership; não criar contas remotas automaticamente.
 - MCP: só ligar um servidor após identificar necessidade, credenciais e escopo. A aula pede auditoria do que for ligado; não autoriza instalar qualquer integração.
 
-As provas de ativação de skill em sessões novas, propostas na aula 10, não foram repetidas em sessões independentes. Há auditoria e uso real da skill visual nesta execução; isso não equivale àquelas provas isoladas. Não há MCP conectado para auditar/provar: CLI e consultas HTTP cobriram os diagnósticos disponíveis, conforme a própria orientação da aula de não conectar quando um CLI resolve.
+As provas de ativação positiva e negativa da skill foram posteriormente executadas em sessões independentes; o scanner nativo também confirmou a skill habilitada. Resultados em `docs/auditoria-skills-mcp.md`. Não há MCP de banco conectado: CLI e consultas HTTP cobriram os diagnósticos disponíveis, conforme a orientação da aula de não conectar quando um CLI resolve.
 
 Os resultados da execução estão abaixo. A revisão independente confirmou checks locais e 19 testes, foi interrompida pelo limite de uso e retomou após o usuário pedir continuidade. Build e Playwright foram executados pelo principal; o verificador recebeu os resultados, releu o código e os testes finais sem corrigir arquivos.
 
-## Conexões conferidas
+## Conexões conferidas na etapa inicial
 
 - Fonte correta confirmada pelo usuário: repositório local EmpresTI Helo/empresteti e https://empresteti-hzyj.vercel.app/.
 - Git remoto: https://github.com/heloisamdj/empresteti.git. Branch de trabalho existente: fix/prisma-build; nenhum push nesta execução.
@@ -81,4 +81,4 @@ O verificador independente aprovou CA-01 a CA-12 para a implementação local. T
 
 Os E2E interceptam o endpoint no navegador e usam o adaptador HTTP do tRPC para chamar o router real com contexto de teste. Assim exercitam telas, procedimentos, Services, Prisma e PostgreSQL, mas não comprovam a montagem real de sessão/tenant no Route Handler contra uma conta Supabase. O teste SSR separado verifica escrita httpOnly, validação e encerramento com respostas do provedor simuladas. O teste CSRF chama o Route Handler real. Não há bypass de autenticação de teste no código do aplicativo.
 
-Por isso, aprovação local dos CA não significa integração remota ou publicação pronta. Permanecem: login real com usuário convidado e vínculo no banco utilizado; conexão PostgreSQL do Supabase correto; variáveis privadas/deploy da Vercel; provocações isoladas da skill em sessões novas. Nenhuma chave privada foi impressa e nenhum push, deploy ou migration remota foi executado.
+Por isso, aprovação local dos CA não significa integração remota ou publicação pronta. Permanecem login real com usuário convidado/vínculo e conexão PostgreSQL do Supabase correto. Na etapa posterior, o usuário autorizou publicação e integração: a branch foi enviada e as prévias foram tentadas, mas ainda não promovidas. Histórico atualizado em `docs/publicacao.md`. Nenhuma chave privada foi impressa ou migration remota aplicada.

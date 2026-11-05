@@ -249,6 +249,20 @@ test("test_ca_12_telas tema foco movimento e adaptação móvel", async ({
         ),
       ).toBeVisible();
       const filter = page.getByRole("button", { name: "Todos", exact: true });
+      await expect(
+        page.getByText("1 equipamento · 1 disponível agora", { exact: true }),
+      ).toBeVisible();
+      await expect(filter).toHaveAttribute("aria-pressed", "true");
+      await expect(filter).toHaveCSS("border-top-color", "rgb(37, 64, 143)");
+      await expect(filter).toHaveCSS("padding-top", "6px");
+      const rules = page
+        .getByRole("status")
+        .filter({ hasText: "Equipamento certo, na hora certa." });
+      await expect(rules).toHaveCSS("padding-top", "13px");
+      await expect(rules).toHaveCSS(
+        "background-image",
+        "linear-gradient(90deg, rgb(14, 21, 48), rgb(11, 17, 40))",
+      );
       await filter.hover();
       await page.mouse.down();
       await expect(filter).toHaveCSS("transform", "matrix(1, 0, 0, 1, 0, 1)");
@@ -281,6 +295,10 @@ test("test_ca_12_telas tema foco movimento e adaptação móvel", async ({
       .getByLabel("Buscar equipamento")
       .evaluate((el) => getComputedStyle(el).outlineStyle),
   ).not.toBe("none");
+  await expect(page.getByLabel("Buscar equipamento")).toHaveCSS(
+    "outline-offset",
+    "2px",
+  );
   expect(
     await page
       .getByRole("button", { name: "Todos", exact: true })

@@ -32,8 +32,8 @@ import {
 type Category = (typeof categories)[number];
 function RuleNotice() {
   return (
-    <Notice>
-      <p className="font-semibold text-[var(--color-text)]">
+    <Notice className="bg-[linear-gradient(90deg,#0E1530,#0B1128)] px-4 py-[13px] text-[12.5px] text-[var(--text-secondary)] [&>i]:text-[var(--accent-400)]">
+      <p className="text-[13px] font-semibold text-[var(--color-text)]">
         Equipamento certo, na hora certa.
       </p>
       <p>
@@ -432,7 +432,7 @@ export function CatalogScreen() {
         description={
           sample
             ? "Conheça os equipamentos · exemplos do catálogo"
-            : `${first.total} equipamentos encontrados`
+            : `${first.total} ${first.total === 1 ? "equipamento" : "equipamentos"} · ${first.availableCount} ${first.availableCount === 1 ? "disponível" : "disponíveis"} agora`
         }
       />
       <RuleNotice />
@@ -443,7 +443,13 @@ export function CatalogScreen() {
             <Button
               key={value ?? "all"}
               variant={category === value ? "confirmation" : "secondary"}
-              className="min-h-8 rounded-full px-3 text-xs"
+              aria-pressed={category === value}
+              className={cn(
+                "min-h-8 rounded-full px-3 py-[6px] text-xs",
+                category === value
+                  ? "border-[var(--accent-700)] bg-[var(--accent-800)] text-[var(--accent-200)]"
+                  : "border-[var(--border-frame)] bg-transparent text-[var(--text-secondary)]",
+              )}
               onClick={() => setCategory(value)}
             >
               {value ? categoryLabels[value] : "Todos"}

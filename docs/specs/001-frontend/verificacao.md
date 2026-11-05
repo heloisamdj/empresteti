@@ -29,3 +29,9 @@ Checks: `git diff --check` → passou; informado pelo principal
 Fora de escopo: nada encontrado. Publicação e login com conta Supabase real permanecem sem verificação.
 
 Veredito: PRONTA — implementação local atende aos CA-01 a CA-12, sem autorização ou comprovação de publicação.
+
+## Revisão complementar após as provas de skill
+
+O verificador independente releu as correções posteriores de contagem de disponibilidade (CA-02), filtros, faixa de regras e foco (CA-12). Conferiu a contagem via banco filtrado por tenant e os testes de item emprestado/tenant sem equipamentos. Foram repetidos pelo principal: estrutura, lint sem erros (aviso preexistente), tipos, 19 Vitest, build e dez E2E; todos passaram. O teste `tests/e2e/flows.spec.ts:222` agora também confere chips, faixa, contagem e foco. O verificador não repetiu comandos nessa revisão somente leitura.
+
+Veredito complementar: PRONTA — correções locais da spec aprovadas; este parecer não comprova publicação, integração remota ou login real no aplicativo.

@@ -11,7 +11,16 @@
 
 ### Evidência de uso e limite das provas
 
-A skill foi carregada para implementar as telas desta spec, e suas orientações foram aplicadas preservando os ADRs. Migrações, roteadores e diagnóstico de conexão seguiram os procedimentos correspondentes do projeto. As provocações de ativação positiva e negativa em sessões novas, pedidas na aula 10, não foram executadas como sessões independentes; não são marcadas como concluídas por mera inspeção da description. Para reproduzi-las, abrir uma sessão limpa por caso: pedir revisão visual de uma tela com CA existente e observar a skill; em outra, pedir diagnóstico de migration e observar que a skill visual não é carregada. Registrar as chamadas e a decisão de ativação, sem mudar código ou decisões do produto.
+A skill foi carregada para implementar as telas desta spec, preservando os ADRs. A ativação agora também foi conferida pelo scanner nativo do Codex (`skills/list`, com releitura): `frontend-design`, escopo `repo`, `enabled: true`, sem erros, tanto na pasta do projeto como na pasta de trabalho aberta. Os registros em `.agents/skills/frontend-design` são Junctions para a mesma fonte em `skills/frontend-design`; não há cópia duplicada. O template não foi ativado. A configuração `agents/openai.yaml` permite seleção implícita.
+
+As duas provocações da aula 10 foram executadas em subagentes com contexto novo, sem indicar o resultado esperado ou nomear a skill no pedido:
+
+| Prova | Pedido natural | Resultado observado |
+|---|---|---|
+| Positiva — prova_visual_skill | Revisar composição, tipografia, foco e movimento do catálogo contra layout/CA-12, somente leitura | Leu as descriptions, carregou frontend-design por pertinência e realizou a revisão; encontrou diferenças reais de contagem, chips, faixa e foco, encaminhadas à correção. |
+| Negativa — prova_banco_skill | Explicar DATABASE_URL/DIRECT_URL e o procedimento de migration sem modificar código/banco | Leu somente frontmatter das skills; não carregou a skill visual, cujo escopo exclui banco. Respondeu a partir de schema, ADR e rules. |
+
+Nenhum dos avaliadores alterou arquivos ou acessou credenciais. As provas demonstram os dois casos observados; não garantem seleção correta para todo pedido futuro. O carregamento automático é por pertinência da description, e a invocação explícita continua disponível como `$frontend-design`.
 
 ## MCP
 

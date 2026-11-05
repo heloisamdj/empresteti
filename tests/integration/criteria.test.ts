@@ -63,6 +63,7 @@ describe("Critérios da spec 001 em PostgreSQL real", () => {
   });
   it("test_ca_02_catalogo_detalhe e isolamento de tenant", async () => {
     const list = await f.caller.equipment.list(input);
+    expect(list.availableCount).toBe(1);
     expect(list.items[0]).toMatchObject({
       id: f.equipment.id,
       status: "AVAILABLE",
@@ -72,6 +73,7 @@ describe("Critérios da spec 001 em PostgreSQL real", () => {
       (await f.caller.equipment.detail({ patrimony: "PAT-1042" })).id,
     ).toBe(f.equipment.id);
     expect((await f.other.equipment.list(input)).total).toBe(0);
+    expect((await f.other.equipment.list(input)).availableCount).toBe(0);
     await expect(
       f.other.equipment.detail({ patrimony: "PAT-1042" }),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
@@ -134,6 +136,7 @@ describe("Critérios da spec 001 em PostgreSQL real", () => {
       f.caller.loans.request({ id: f.equipment.id }),
     ]);
     expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+    expect((await f.caller.equipment.list(input)).availableCount).toBe(0);
     const loan = await env.db.loan.findFirstOrThrow();
     expect(loan.dueDate.getTime() - loan.borrowedAt.getTime()).toBe(
       14 * 86400000,
