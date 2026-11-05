@@ -21,3 +21,11 @@ Ao iniciar qualquer funcionalidade nova do PRD.
 - A spec só é pronta com "Veredito: PRONTA". Qualquer outro resultado
   volta para as tarefas — quem corrige é o agente principal, nunca o
   verificador.
+- Para a prática, inicie uma sessão Codex nova em snapshot somente de
+  arquivos versionados, sem credenciais, com sandbox somente leitura,
+  rede do shell bloqueada e aprovações desativadas. Acione o papel
+  `verificador-spec` de `.codex/agents/`. O verificador recebe a spec,
+  o SHA e as saídas dos checks executados fora da sessão isolada.
+- Registre a tabela e o veredito em `verificacao.md`. O CI do PR e da
+  tag `entrega-pratica` confere o parecer, a cobertura dos CAs e se a
+  revisão ainda corresponde aos arquivos entregues.

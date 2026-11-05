@@ -18,6 +18,22 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+  spec-review:
+    name: Parecer obrigatório da prática
+    if: github.event_name == 'pull_request' || github.ref == 'refs/tags/entrega-pratica'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node scripts/check-spec-review.mjs ${{ github.ref == 'refs/tags/entrega-pratica' && 'delivery' || 'review' }}
   migrate-production:
     name: Aplicar migrations autorizadas do EmpresTI
     needs: validate
