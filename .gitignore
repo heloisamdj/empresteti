@@ -22,3 +22,5 @@ test-results/
 .equipamentos-fotos/
 # Vínculos locais de descoberta; a fonte versionada fica em skills/.
 .agents/skills/
+# Cópia local de outro repositório.
+/empresteti/
