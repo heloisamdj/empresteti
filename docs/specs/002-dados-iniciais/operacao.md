@@ -14,11 +14,11 @@ passarem no commit a integrar. O responsável confere os checks antes do merge.
 O CI aponta reprovação, mas o GitHub não impede o merge automaticamente.
 
 1. O responsável executa o job de migration do Prisma pelo GitHub Actions. O disparo usa a branch `pratica/sdd-subagentes` e um commit deliberado com `[migrate-db]`, após revisão da migration. Aguarde o job antes de promover uma versão que usa `photo_path`.
-   Com as mudanças de preparação já commitadas, o responsável cria apenas o
-   commit de disparo e publica a branch da prática:
+   Com o commit local de disparo já preparado, o responsável confere se o
+   último commit da branch contém `[migrate-db]` e publica a branch da prática:
 
    ```powershell
-   git commit --allow-empty -m "Aplica migration da pratica [migrate-db]"
+   git log -1 --oneline
    git push -u origin pratica/sdd-subagentes
    ```
 
