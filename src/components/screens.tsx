@@ -36,10 +36,10 @@ type Category = (typeof categories)[number];
 function PhotoCredit() {
   return (
     <a
-      href="https://www.pexels.com/"
+      href="https://pixabay.com/"
       className="w-fit text-xs text-[var(--accent-400)] underline underline-offset-2"
     >
-      Fotos: Pexels
+      Fotos: Pixabay
     </a>
   );
 }

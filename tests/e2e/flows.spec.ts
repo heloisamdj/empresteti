@@ -4,6 +4,7 @@ import { fixtures, startDatabase } from "../helpers/database";
 import { appRouter } from "../../src/server/api/root";
 import type { Context } from "../../src/server/api/trpc";
 import inventory from "../../skills/imagens-equipamentos/assets/equipamentos.json";
+import { formatDate } from "../../src/lib/contracts";
 
 let env: Awaited<ReturnType<typeof startDatabase>>;
 let f: Awaited<ReturnType<typeof fixtures>>;
@@ -70,7 +71,7 @@ test("test_ca_01_login e redirecionamento de rota protegida", async ({
   await page.getByRole("button", { name: "Sair", exact: true }).first().click();
   await expect(page).toHaveURL(/\/login$/);
 });
-test("spec 002 test_ca_04 e spec 003 test_ca_01_ca_04 catálogo exibe fotos e crédito Pexels", async ({
+test("spec 002 test_ca_04 e spec 003 test_ca_01_ca_04 catálogo exibe fotos e crédito Pixabay", async ({
   page,
 }) => {
   await connect(page);
@@ -115,8 +116,8 @@ test("spec 002 test_ca_04 e spec 003 test_ca_01_ca_04 catálogo exibe fotos e cr
     .toBe(800);
   await expect(image).toHaveAttribute("height", "600");
   await expect(
-    page.getByRole("link", { name: "Fotos: Pexels" }),
-  ).toHaveAttribute("href", "https://www.pexels.com/");
+    page.getByRole("link", { name: "Fotos: Pixabay" }),
+  ).toHaveAttribute("href", "https://pixabay.com/");
 });
 test("spec 003 test_ca_03 sexto empréstimo fica indisponível com motivo visível", async ({
   page,
@@ -164,6 +165,25 @@ test("test_ca_02_ca_05_ca_07_ca_08 fluxo completo persiste e exige confirmação
   await expect(
     page.getByRole("heading", { name: "Comigo agora" }),
   ).toBeVisible();
+  const created = await env.db.loan.findFirstOrThrow({
+    where: { userId: f.user.id },
+  });
+  await expect(
+    page.getByText(formatDate(created.dueDate), { exact: false }).first(),
+  ).toBeVisible();
+  await page.goto("/catalogo");
+  const borrowed = page
+    .getByRole("article")
+    .filter({ hasText: f.equipment.patrimony });
+  await expect(borrowed).toContainText("Emprestado");
+  await expect(borrowed.getByRole("link")).toHaveCount(0);
+  await page.getByRole("checkbox", { name: "Só disponíveis" }).check();
+  await expect(borrowed).toHaveCount(0);
+  await page.goto(`/catalogo/${f.equipment.patrimony}`);
+  await expect(
+    page.getByRole("button", { name: "Solicitar empréstimo", exact: true }),
+  ).toBeDisabled();
+  await page.goto("/meus-emprestimos");
   await page.getByRole("button", { name: "Solicitar devolução" }).click();
   await expect(
     page.getByText("Aguardando Operações", { exact: true }),

@@ -1,5 +1,9 @@
 import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
+import {
+  pixabayLicense,
+  pixabayPhotoPage,
+} from "../skills/imagens-equipamentos/scripts/pixabay.mjs";
 
 const inventory = JSON.parse(
   readFileSync(
@@ -21,10 +25,11 @@ const literal = (value) => "'" + value.replaceAll("'", "''") + "'";
 export function inventorySql(manifest, { includeTeacher = false } = {}) {
   const images = manifest.images ?? [];
   if (
+    manifest.provider !== "pixabay" ||
     manifest.status !== "aprovado" ||
     !manifest.reviewedBy?.trim() ||
     images.length !== inventory.length ||
-    new Set(images.map((image) => image.pexelsId)).size !== inventory.length ||
+    new Set(images.map((image) => image.pixabayId)).size !== inventory.length ||
     new Set(images.map((image) => image.sha256)).size !== inventory.length
   )
     throw new Error(
@@ -35,13 +40,11 @@ export function inventorySql(manifest, { includeTeacher = false } = {}) {
     const image = images.find((entry) => entry.patrimonio === item.patrimonio);
     if (
       !image ||
-      !Number.isSafeInteger(image.pexelsId) ||
-      image.pexelsId < 1 ||
+      !Number.isSafeInteger(image.pixabayId) ||
+      image.pixabayId < 1 ||
       !image.author?.trim() ||
-      image.license !== "https://www.pexels.com/license/" ||
-      !new RegExp(
-        `^https://www\\.pexels\\.com/photo/[^/]+-${image.pexelsId}/?$`,
-      ).test(image.source) ||
+      image.license !== pixabayLicense ||
+      !pixabayPhotoPage(image.source, image.pixabayId) ||
       !/^[a-f0-9]{64}$/.test(image.sha256) ||
       image.width !== 800 ||
       image.height !== 600 ||
