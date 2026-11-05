@@ -3,6 +3,7 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { fixtures, startDatabase } from "../helpers/database";
 import { appRouter } from "../../src/server/api/root";
 import type { Context } from "../../src/server/api/trpc";
+import inventory from "../../skills/imagens-equipamentos/assets/equipamentos.json";
 
 let env: Awaited<ReturnType<typeof startDatabase>>;
 let f: Awaited<ReturnType<typeof fixtures>>;
@@ -69,18 +70,28 @@ test("test_ca_01_login e redirecionamento de rota protegida", async ({
   await page.getByRole("button", { name: "Sair", exact: true }).first().click();
   await expect(page).toHaveURL(/\/login$/);
 });
-test("spec 002 test_ca_04 catálogo exibe foto de 800 × 600 e crédito Pexels", async ({
+test("spec 002 test_ca_04 e spec 003 test_ca_01_ca_04 catálogo exibe fotos e crédito Pexels", async ({
   page,
 }) => {
   await connect(page);
-  const item = await env.db.equipment.findFirstOrThrow({
-    where: { tenantId: f.tenant.id },
+  const category = {
+    notebook: "NOTEBOOK",
+    monitor: "MONITOR",
+    cabo: "CABLE",
+    camera: "CAMERA",
+  } as const;
+  await env.db.equipment.delete({ where: { id: f.equipment.id } });
+  await env.db.equipment.createMany({
+    data: inventory.map((item, index) => ({
+      tenantId: f.tenant.id,
+      name: item.nome,
+      category: category[item.categoria as keyof typeof category],
+      patrimony: item.patrimonio,
+      status: item.situacao === "manutencao" ? "MAINTENANCE" : "AVAILABLE",
+      photoPath: `${item.patrimonio}/${(index + 1).toString(16).padStart(64, "0")}.webp`,
+    })),
   });
-  const path = `TI-0001/${"a".repeat(64)}.webp`;
-  await env.db.equipment.update({
-    where: { id: item.id },
-    data: { photoPath: path },
-  });
+  const path = `TI-0001/${"1".padStart(64, "0")}.webp`;
   await page.route("**/storage/v1/object/public/equipamentos/**", (route) =>
     route.fulfill({
       status: 200,
@@ -89,7 +100,12 @@ test("spec 002 test_ca_04 catálogo exibe foto de 800 × 600 e crédito Pexels",
     }),
   );
   await page.goto("/catalogo");
-  const image = page.getByRole("img", { name: item.name, exact: true });
+  await expect(
+    page.getByText("12 equipamentos · 9 disponíveis agora"),
+  ).toBeVisible();
+  await expect(page.locator("img[src*='/equipamentos/TI-']")).toHaveCount(12);
+  await expect(page.locator('a[href="/catalogo/TI-0010"]')).toHaveCount(0);
+  const image = page.getByRole("img", { name: inventory[0].nome, exact: true });
   await expect(image).toHaveAttribute(
     "src",
     new RegExp(`/storage/v1/object/public/equipamentos/${path}$`),
@@ -101,6 +117,28 @@ test("spec 002 test_ca_04 catálogo exibe foto de 800 × 600 e crédito Pexels",
   await expect(
     page.getByRole("link", { name: "Fotos: Pexels" }),
   ).toHaveAttribute("href", "https://www.pexels.com/");
+});
+test("spec 003 test_ca_03 sexto empréstimo fica indisponível com motivo visível", async ({
+  page,
+}) => {
+  await connect(page);
+  for (let index = 1; index <= 5; index++) {
+    const item = await env.db.equipment.create({
+      data: {
+        tenantId: f.tenant.id,
+        name: `Item ${index}`,
+        patrimony: `PAT-LIM-${index}`,
+        category: "MONITOR",
+      },
+    });
+    await f.caller.loans.request({ id: item.id });
+  }
+  await page.goto(`/catalogo/${f.equipment.patrimony}`);
+  await expect(
+    page.getByRole("button", { name: "Solicitar empréstimo" }),
+  ).toBeDisabled();
+  await expect(page.getByText(/Limite de 5 itens atingido/)).toBeVisible();
+  expect((await f.caller.loans.mine()).openCount).toBe(5);
 });
 test("test_ca_02_ca_05_ca_07_ca_08 fluxo completo persiste e exige confirmação", async ({
   page,
@@ -114,7 +152,7 @@ test("test_ca_02_ca_05_ca_07_ca_08 fluxo completo persiste e exige confirmação
   await page
     .getByRole("button", { name: "Solicitar empréstimo", exact: true })
     .click();
-  await expect(page.getByRole("dialog")).toContainText("14 dias");
+  await expect(page.getByRole("dialog")).toContainText("14 dias úteis");
   expect(
     await page
       .getByRole("dialog")

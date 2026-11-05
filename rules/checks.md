@@ -74,9 +74,8 @@ concluída com um item pendente. Marque mentalmente cada seção; não pule para
       do request, sem fila.
 
 ## Regras de negócio (PRD)
-- [ ] Nenhuma alteração passa do limite de 3 itens simultâneos emprestados por
-      colaborador.
-- [ ] Prazo padrão de devolução continua sendo 14 dias.
+- [ ] A solicitação da prática respeita o limite de 5 empréstimos em aberto da spec 003.
+- [ ] A previsão e o prazo gravado usam 14 dias úteis conforme a spec 003. Empréstimos anteriores conservam a data registrada.
 - [ ] Colaborador com item em atraso não consegue solicitar novo empréstimo —
       fluxo coberto por teste.
 - [ ] Equipamento em manutenção nunca aparece como disponível no catálogo.

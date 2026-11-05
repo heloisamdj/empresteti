@@ -14,6 +14,8 @@ import {
   equipmentInput,
   formatDate,
   loginInput,
+  LOAN_DAYS,
+  MAX_ITEMS,
 } from "@/lib/contracts";
 import { examples, categoryIcon } from "@/lib/examples";
 import {
@@ -62,8 +64,8 @@ function RuleNotice() {
         Equipamento certo, na hora certa.
       </p>
       <p>
-        Até 3 itens por pessoa · prazo de 14 dias · atraso bloqueia novos
-        pedidos · manutenção indisponível para empréstimo.
+        Até {MAX_ITEMS} itens por pessoa · prazo de {LOAN_DAYS} dias úteis ·
+        atraso bloqueia novos pedidos · manutenção indisponível para empréstimo.
       </p>
     </Notice>
   );
@@ -115,10 +117,10 @@ function Limit({ count }: { count: number }) {
   return (
     <div className="flex flex-col gap-2">
       <p className="text-xs text-[var(--text-muted)]">
-        {count} de 3 itens com você
+        {count} de {MAX_ITEMS} itens com você
       </p>
       <div className="flex gap-[5px]" aria-hidden="true">
-        {[0, 1, 2].map((i) => (
+        {Array.from({ length: MAX_ITEMS }, (_, i) => (
           <span
             key={i}
             className={cn(
@@ -344,13 +346,13 @@ export function LoginScreen() {
           <div className="h-px bg-gradient-to-r from-[var(--accent-600)] to-transparent" />
           <div className="flex gap-10">
             <div>
-              <p className="text-2xl font-semibold">3 itens</p>
+              <p className="text-2xl font-semibold">{MAX_ITEMS} itens</p>
               <p className="pt-1 text-xs text-[var(--text-muted)]">
                 por pessoa
               </p>
             </div>
             <div>
-              <p className="text-2xl font-semibold">14 dias</p>
+              <p className="text-2xl font-semibold">{LOAN_DAYS} dias úteis</p>
               <p className="pt-1 text-xs text-[var(--text-muted)]">
                 de prazo padrão
               </p>
@@ -604,7 +606,7 @@ export function DetailScreen({ patrimony }: { patrimony: string }) {
   const count = mine.data.openCount;
   const blocked =
     !!example ||
-    count >= 3 ||
+    count >= MAX_ITEMS ||
     mine.data.overdue ||
     item.status !== "AVAILABLE" ||
     !!active;
@@ -612,8 +614,8 @@ export function DetailScreen({ patrimony }: { patrimony: string }) {
     ? "Cadastre um equipamento real para solicitar um empréstimo."
     : mine.data.overdue
       ? "Você tem item em atraso. Regularize a devolução para solicitar outro."
-      : count >= 3
-        ? "Limite de 3 itens atingido. Devolva um item antes de solicitar outro."
+      : count >= MAX_ITEMS
+        ? `Limite de ${MAX_ITEMS} itens atingido. Devolva um item antes de solicitar outro.`
         : item.status !== "AVAILABLE" || active
           ? "Este equipamento não está disponível."
           : "Retirada no local indicado. A devolução será confirmada por Operações.";
@@ -716,7 +718,7 @@ export function DetailScreen({ patrimony }: { patrimony: string }) {
               </div>
               <div className="flex justify-between">
                 <dt className="text-[var(--text-muted)]">Prazo padrão</dt>
-                <dd>14 dias</dd>
+                <dd>{LOAN_DAYS} dias úteis</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-[var(--text-muted)]">Devolver até</dt>
@@ -748,11 +750,11 @@ export function DetailScreen({ patrimony }: { patrimony: string }) {
         open={open}
         onOpenChange={setOpen}
         title="Confirmar empréstimo"
-        description={`Solicitar ${item.name} (${item.patrimony}), com prazo de 14 dias e devolução prevista para ${formatDate(due)}?`}
+        description={`Solicitar ${item.name} (${item.patrimony}), com prazo de ${LOAN_DAYS} dias úteis e devolução prevista para ${formatDate(due)}?`}
       >
         <Notice>
-          Você passará a ter {count + 1} de 3 itens. O prazo definitivo será
-          calculado pelo servidor na confirmação.
+          Você passará a ter {count + 1} de {MAX_ITEMS} itens. O prazo
+          definitivo será calculado pelo servidor na confirmação.
         </Notice>
         <Button
           variant="confirmation"
@@ -788,7 +790,7 @@ export function MyLoansScreen() {
     >
       <ScreenTitle
         title="Comigo agora"
-        description={`${data.openCount} de 3 itens · ${data.overdue ? "há item em atraso" : "nenhum em atraso"}`}
+        description={`${data.openCount} de ${MAX_ITEMS} itens · ${data.overdue ? "há item em atraso" : "nenhum em atraso"}`}
         action={
           <Button asChild>
             <Link href="/catalogo">Pegar emprestado</Link>

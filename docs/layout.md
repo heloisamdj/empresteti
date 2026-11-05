@@ -1,5 +1,7 @@
 # EmpresTI — Especificação de Layout (para reprodução por agente de IA)
 
+Os exemplos de prazo e limite deste documento são históricos. Na prática SDD, a interface segue cinco itens e 14 dias úteis conforme a [spec 003](specs/003-solicitar-emprestimo/spec.md). Cards e detalhe exibem foto e crédito conforme a [spec 002](specs/002-dados-iniciais/spec.md).
+
 Documento de referência do front-end do EmpresTI (empréstimo de equipamentos internos).
 Base visual: design system **Nocturne** adaptado à primária `#001449`.
 **Somente modo escuro.** Não existe modo claro, nem alternador de tema.

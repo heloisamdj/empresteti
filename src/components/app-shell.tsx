@@ -10,7 +10,7 @@ import {
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/trpc";
-import { categoryLabels } from "@/lib/contracts";
+import { categoryLabels, MAX_ITEMS } from "@/lib/contracts";
 import { Button, Icon, Loading, Notice, cn } from "./ui";
 const AppSearchContext = createContext<{
   search: string;
@@ -248,7 +248,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </Button>
             )}
             <span className="text-xs text-[var(--text-dim)]">
-              {mine.data?.openCount ?? 0} de 3 itens com você
+              {mine.data?.openCount ?? 0} de {MAX_ITEMS} itens com você
             </span>
             {pathname === "/catalogo" && (
               <Button

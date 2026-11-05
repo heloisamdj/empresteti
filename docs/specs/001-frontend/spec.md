@@ -1,5 +1,7 @@
 # Spec — Front-end da v1
 
+Os critérios CA-04 e CA-05 documentam a versão anterior. Para o fluxo da prática SDD, o limite e o prazo são os aprovados na [spec 003](../003-solicitar-emprestimo/spec.md).
+
 ## Objetivo
 
 Entregar a interface do EmpresTI para substituir a planilha de empréstimos de equipamentos. A interface atende colaboradores e usuários de Operações no mesmo aplicativo.

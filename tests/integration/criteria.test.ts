@@ -5,6 +5,7 @@ import { appRouter } from "../../src/server/api/root";
 import type { Context } from "../../src/server/api/trpc";
 import inventory from "../../skills/imagens-equipamentos/assets/equipamentos.json";
 import { inventorySql } from "../../scripts/prepare-practice-data.mjs";
+import { loanDeadline } from "../../src/server/services/loan-deadline";
 
 let env: Awaited<ReturnType<typeof startDatabase>>;
 let f: Awaited<ReturnType<typeof fixtures>>;
@@ -150,9 +151,9 @@ describe("Critérios da spec 001 em PostgreSQL real", () => {
         .items,
     ).toEqual([]);
   });
-  it("test_ca_04_limite três e solicitações concorrentes", async () => {
+  it("spec 003 test_ca_03_ca_05 quinto pedido permitido e sexto recusado sob concorrência", async () => {
     const items = await Promise.all(
-      [0, 1, 2, 3].map((i) =>
+      [0, 1, 2, 3, 4, 5].map((i) =>
         env.db.equipment.create({
           data: {
             tenantId: f.tenant.id,
@@ -166,10 +167,15 @@ describe("Critérios da spec 001 em PostgreSQL real", () => {
     const results = await Promise.allSettled(
       items.map((item) => f.caller.loans.request({ id: item.id })),
     );
-    expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(3);
-    expect(await env.db.loan.count()).toBe(3);
+    expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(5);
+    const rejected = results.find((result) => result.status === "rejected");
+    expect(rejected).toMatchObject({
+      status: "rejected",
+      reason: { message: "Limite de 5 itens atingido." },
+    });
+    expect(await env.db.loan.count()).toBe(5);
   });
-  it("test_ca_04_atraso bloqueia mesmo com vagas", async () => {
+  it("spec 003 test_ca_03_atraso bloqueia mesmo com vagas", async () => {
     await env.db.loan.create({
       data: {
         tenantId: f.tenant.id,
@@ -191,22 +197,41 @@ describe("Critérios da spec 001 em PostgreSQL real", () => {
       /atraso/,
     );
   });
-  it("test_ca_05_prazo 14 dias, disputa de equipamento e isolamento de request", async () => {
+  it("spec 003 test_ca_02_ca_05_ca_06 disputa entre usuários, prazo persistido e isolamento", async () => {
     await expect(
       f.other.loans.request({ id: f.equipment.id }),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await env.db.membership.create({
+      data: { tenantId: f.tenant.id, userId: f.otherUser.id },
+    });
+    const second = appRouter.createCaller(
+      f.context({
+        ...f.otherIdentity,
+        tenantId: f.tenant.id,
+        tenantName: f.tenant.name,
+      }),
+    );
     const results = await Promise.allSettled([
       f.caller.loans.request({ id: f.equipment.id }),
-      f.caller.loans.request({ id: f.equipment.id }),
+      second.loans.request({ id: f.equipment.id }),
     ]);
     expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
     expect((await f.caller.equipment.list(input)).availableCount).toBe(0);
     const loan = await env.db.loan.findFirstOrThrow();
-    expect(loan.dueDate.getTime() - loan.borrowedAt.getTime()).toBe(
-      14 * 86400000,
-    );
+    expect(loan.dueDate).toEqual(loanDeadline(loan.borrowedAt));
+    const [mine, theirs] = await Promise.all([
+      f.caller.loans.mine(),
+      second.loans.mine(),
+    ]);
+    const owner = loan.userId === f.user.id ? mine : theirs;
+    const other = loan.userId === f.user.id ? theirs : mine;
+    expect(owner.openItems).toMatchObject([
+      { id: loan.id, dueDate: loan.dueDate },
+    ]);
+    expect(other.openItems).toHaveLength(0);
+    expect((await f.other.loans.mine()).openItems).toHaveLength(0);
   });
-  it("test_ca_06_manutencao nunca fica disponível e fora de uso sai do catálogo", async () => {
+  it("spec 003 test_ca_04_manutencao nunca fica disponível e fora de uso sai do catálogo", async () => {
     await env.db.equipment.update({
       where: { id: f.equipment.id },
       data: { status: "MAINTENANCE" },
