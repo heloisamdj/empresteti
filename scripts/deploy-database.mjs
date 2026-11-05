@@ -62,8 +62,16 @@ function connection(value, authRef) {
 }
 async function overview(db) {
   const existing =
-    await db.$queryRaw`SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename`;
+    await db.$queryRaw`SELECT relname AS tablename FROM pg_class WHERE relnamespace='public'::regnamespace AND relkind IN ('r','p','v','m','S','f','c') ORDER BY relname`;
   const names = existing.map((row) => row.tablename);
+  const functions =
+    await db.$queryRaw`SELECT p.proname AS name FROM pg_proc p WHERE p.pronamespace='public'::regnamespace AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_proc'::regclass AND d.objid=p.oid AND d.deptype='e')`;
+  const types =
+    await db.$queryRaw`SELECT t.typname AS name FROM pg_type t WHERE t.typnamespace='public'::regnamespace AND t.typtype IN ('e','d') AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid='pg_type'::regclass AND d.objid=t.oid AND d.deptype='e')`;
+  const extraObjects = [
+    ...functions.map((row) => `function:${row.name}`),
+    ...types.map((row) => `type:${row.name}`),
+  ];
   const history = names.includes("_prisma_migrations")
     ? await db.$queryRaw`SELECT migration_name, checksum, finished_at, rolled_back_at FROM public._prisma_migrations ORDER BY started_at`
     : [];
@@ -91,6 +99,7 @@ async function overview(db) {
   }
   return {
     names,
+    extraObjects,
     applied: history
       .filter((row) => row.finished_at && !row.rolled_back_at)
       .map((row) => row.migration_name),
@@ -133,13 +142,16 @@ async function run(file, args) {
 }
 try {
   check(["verify", "migrate"].includes(mode), "Use verify ou migrate.");
+  const vercel =
+    process.env.VERCEL === "1" &&
+    process.env.VERCEL_PROJECT_ID === expectedProject;
+  const github =
+    process.env.GITHUB_ACTIONS === "true" &&
+    process.env.GITHUB_REPOSITORY === "heloisamdj/empresteti" &&
+    process.env.EMPRESTI_DATABASE_JOB === "1";
   check(
-    process.env.VERCEL === "1",
-    "Job permitido somente no ambiente Vercel autorizado.",
-  );
-  check(
-    process.env.VERCEL_PROJECT_ID === expectedProject,
-    "Projeto Vercel inesperado.",
+    mode === "migrate" ? github : vercel || github,
+    "Migration exige o job GitHub Actions autorizado; verificação exige Vercel ou esse job.",
   );
   const authUrl = new URL(
     process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -149,6 +161,10 @@ try {
     "Auth não aponta ao Supabase.",
   );
   const authRef = authUrl.hostname.split(".")[0];
+  check(
+    authRef === "pkncugbogwvxyulbngjr",
+    "O destino autorizado para esta publicação é o Supabase pkncugbogwvxyulbngjr.",
+  );
   console.log(
     JSON.stringify({
       job: mode,
@@ -179,6 +195,29 @@ try {
     await runtime.$queryRaw`SELECT current_database() AS database, current_schema() AS schema`;
   const [directIdentity] =
     await direct.$queryRaw`SELECT current_database() AS database, current_schema() AS schema`;
+  const privilegesByConnection = await Promise.all(
+    [runtime, direct].map(
+      (db) =>
+        db.$queryRaw`SELECT rolname, rolcanlogin, rolsuper, rolcreatedb, rolcreaterole, rolreplication, rolbypassrls, has_database_privilege(current_user,current_database(),'CREATE') AS can_create_schema FROM pg_roles WHERE rolname=current_user`,
+    ),
+  );
+  for (const [privileges] of privilegesByConnection) {
+    check(
+      privileges.rolname === "empresti_v1" &&
+        privileges.rolcanlogin &&
+        !privileges.rolsuper &&
+        !privileges.rolcreatedb &&
+        !privileges.rolcreaterole &&
+        !privileges.rolreplication &&
+        !privileges.rolbypassrls,
+      "A conexão exige o acesso dedicado empresti_v1 sem privilégios administrativos.",
+    );
+    if (mode === "verify")
+      check(
+        !privileges.can_create_schema,
+        "Revogue o privilégio temporário CREATE no banco antes de publicar.",
+      );
+  }
   check(
     runtimeIdentity.database === directIdentity.database &&
       runtimeIdentity.schema === "public" &&
@@ -190,14 +229,22 @@ try {
     JSON.stringify({
       database: "conectado",
       tables: before.names,
+      extraObjects: before.extraObjects,
       applied: before.applied,
       pending: migrations.filter((name) => !before.applied.includes(name)),
     }),
   );
   if (mode === "migrate") {
     check(
-      before.applied.length > 0 || before.names.length === 0,
+      before.applied.length > 0 ||
+        (before.names.every((name) => name === "_prisma_migrations") &&
+          before.extraObjects.length === 0),
       "Schema público não vazio sem histórico Prisma; não será sobrescrito ou resetado.",
+    );
+    check(
+      before.applied.includes("0002_return_request") ||
+        !before.extraObjects.includes("function:check_loan_tenant"),
+      "Existe uma função de integridade sem a migration correspondente; revisão necessária.",
     );
     await Promise.all(clients.map((db) => db.$disconnect()));
     await run("node_modules/prisma/build/index.js", ["migrate", "deploy"]);

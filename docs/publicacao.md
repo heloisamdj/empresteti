@@ -14,9 +14,9 @@ O usuário autorizou publicar as alterações na Vercel, integrar o Supabase e a
 
 O usuário concluiu o login oficial da Vercel pelo navegador. A consulta dos nomes confirmou as cinco variáveis anteriores; o aplicativo usa quatro, sem service_role no cliente. A revisão automática rejeitou o download indiscriminado de variáveis. O usuário autorizou as quatro específicas, mas a API informou `type: sensitive`, sem valor recuperável. Não se tentou contornar essa proteção: as credenciais ficam na Vercel e são utilizadas apenas pelo job autorizado, sem exportação.
 
-O job explícito `scripts/deploy-database.mjs` tem modos verify/migrate. Não roda no boot do aplicativo. Valida projeto Vercel exato, referência Supabase, mesmo banco/schema public nas duas conexões, histórico e checksums (aceitando somente diferença LF/CRLF). Não executa reset e recusa schema não vazio sem histórico Prisma. Arquivos .env e vínculos locais ficam fora do upload por .vercelignore.
+O job explícito `scripts/deploy-database.mjs` tem modos verify/migrate. Não roda no boot do aplicativo. Migrate só aceita o job GitHub Actions autorizado; verify aceita esse job ou o projeto Vercel exato. Valida o Supabase pkncugbogwvxyulbngjr, mesmo banco/schema public e role empresti_v1 sem privilégios administrativos nas duas conexões, histórico e checksums (aceitando somente diferença LF/CRLF). Antes da primeira migration, inventaria relações, funções e tipos para não substituir objetos existentes. Não executa reset. Arquivos .env e vínculos locais ficam fora do upload por .vercelignore.
 
-O ADR-001 §9 prevê migration em job GitHub Actions. A verificação somente leitura foi executada na Vercel, onde já estão as variáveis sensíveis. Antes de usar o modo migrate na Vercel, resolver explicitamente essa exceção operacional; nenhum ADR foi alterado e nenhuma migration remota foi executada.
+O ADR-001 §9 é preservado: o job migrate-production foi preparado no GitHub Actions após validate, usando somente as duas conexões como secrets. Exige push deliberado em fix/prisma-build com marcador [migrate-db], sem execução em PR/push comum; tem concorrência exclusiva e token contents:read. O modo migrate na Vercel é recusado. Nenhum ADR foi alterado e nenhuma migration remota foi executada.
 
 ## Tentativas verificadas
 
@@ -26,7 +26,9 @@ O ADR-001 §9 prevê migration em job GitHub Actions. A verificação somente le
 
 O controle nativo do Chrome foi interrompido porque a ferramenta não conseguia verificar a URL. Na tentativa seguinte, o navegador integrado funcionou e o usuário concluiu o login. A conta heloisamdj mostrou uma organização e um projeto: EmprestimoTi, pkncugbogwvxyulbngjr, pausado e associado a heloisamdj/emprestimoTI (outro repositório, diferente do código atual). O antigo fobuhqvjheblmwbiwera não apareceu nessa conta.
 
-Após essa conferência, o usuário autorizou explicitamente reativar e integrar **pkncugbogwvxyulbngjr**, preservando o código local e o site empresteti-hzyj da Vercel. A reativação foi solicitada pelo painel; o estado seguinte foi “Coming up...”. Não houve troca silenciosa nem reaproveitamento de chaves de um projeto no outro. As configurações locais/Vercel ainda precisam ser atualizadas com as credenciais correspondentes do projeto escolhido.
+Após essa conferência, o usuário autorizou explicitamente reativar e integrar **pkncugbogwvxyulbngjr**, preservando o código local e o site empresteti-hzyj da Vercel. O painel confirmou a restauração e depois o estado **Healthy**. O Table Editor mostrou public sem tabelas/views. A URL/chave pública do novo projeto foram capturadas sem consultar a chave secreta, em arquivo .vercel ignorado; Auth respondeu HTTP200. As conexões/Vercel ainda precisam ser atualizadas após criar/configurar a credencial técnica, cuja confirmação foi solicitada e continua pendente.
+
+O formulário do role empresti_v1 está preparado, ainda não salvo. O teste local descartável validou ambas as migrations e seed com LOGIN e sem superuser/CREATEDB/CREATEROLE/replicação/bypassRLS; sete tabelas com RLS. Identificou que a primeira migration precisa de CREATE no banco atual, concedido temporariamente e revogado antes do seed. O preflight de publicação recusa esse privilégio em qualquer das duas conexões enquanto não for revogado. Plano revisável em `plano-acesso-producao.md`.
 
 ## Próximas ações
 
