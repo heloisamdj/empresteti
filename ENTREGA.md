@@ -17,7 +17,7 @@
 | Só dois itens em manutenção | A lista obrigatória inclui TI-0010 | A estudante escolheu a lista literal, com três em manutenção e nove disponíveis. | [Inventário](skills/imagens-equipamentos/assets/equipamentos.json) e [spec 002](docs/specs/002-dados-iniciais/spec.md) | `fc08575`, `714840a` |
 | Instalar sharp | ADR-001 e regras de dependências | Reutilizar Chromium do Playwright. O canvas produz WebP e a decodificação confirma a dimensão de saída. | [Script da skill](skills/imagens-equipamentos/scripts/fotos.mjs) | `fc08575` |
 | Catálogo sem créditos | Contrato da skill pede atribuição | Mostrar link “Fotos: Pixabay” onde as fotos aparecem e registrar os autores no manifesto. | [Tela](src/components/screens.tsx) e [teste E2E](tests/e2e/flows.spec.ts) | Histórico iniciado em `db7aeef` |
-| Pexels como fonte original | Atualização da prática comunicada pela estudante | Usar a API do Pixabay, guardar o cache de buscas por 24 horas e servir os arquivos pelo Storage. | [Spec 002](docs/specs/002-dados-iniciais/spec.md) e [fluxo](skills/imagens-equipamentos/references/fluxo.md) | Revisão Pixabay |
+| Pexels como fonte original | Atualização da prática comunicada pela estudante | Usar a API do Pixabay, guardar o cache de buscas por 24 horas e servir os arquivos pelo Storage. | [Spec 002](docs/specs/002-dados-iniciais/spec.md) e [fluxo](skills/imagens-equipamentos/references/fluxo.md) | `adf6b6f`, `2f4b44f` |
 | Senha no arquivo da carga | Regras de segredos e prática | O responsável configura a senha no Auth. A carga exige a conta confirmada e cria o vínculo de negócio. | [Operação](docs/specs/002-dados-iniciais/operacao.md) | `714840a`, `db7aeef` |
 | Verificador corrige teste quebrado | Independência exigida pela prática | O verificador aponta a falha e o agente principal corrige. O ambiente da revisão tem shell e integrações desativados. | [Contrato](agents/verificador-spec.md) e [prova](docs/prova-verificador-pratica.md) | `e61c776`, `291efd7` |
 
@@ -59,6 +59,8 @@ A execução usa sandbox de leitura e desativa shell, apps, plugins e aprovaçõ
 Na revisão local `a2f1c63`, a verificação de estrutura, o lint com um aviso preexistente, a checagem de tipos, os **21 testes Vitest**, o build e os **12 testes Playwright** passaram. A primeira rodada de navegador identificou que a política de segurança bloqueava fotos do Storage. O ajuste restringiu a liberação ao caminho do bucket do projeto. O reteste carregou as fotos e conferiu o crédito.
 
 O parecer da revisão `a2f1c63` apontou testes incompletos na carga e no fluxo de solicitação. Os testes agora comparam todos os patrimônios com a lista, verificam que a carga preserva empréstimos antigos e em aberto, verificam a data e o filtro no navegador e garantem o isolamento para a mesma identidade em dois tenants. A revisão local com Pixabay passou novamente os 21 testes Vitest e os 12 Playwright. A primeira tentativa do novo teste de histórico falhou porque a massa de teste não registrava a solicitação de devolução antes da devolução. O dado de teste foi corrigido para respeitar a restrição existente.
+
+Na rodada `2f4b44f`, o verificador aprovou os critérios locais de empréstimo CA-02 a CA-06. Para o CA-01 da spec 003, pediu asserções no navegador para nome, categoria e situação dos 12 cards. A correção foi acrescentada ao cenário do catálogo. A spec 002 segue pendente por fotos e validação em produção.
 
 ## 7. Regra posta à prova
 

@@ -4,7 +4,7 @@ import { fixtures, startDatabase } from "../helpers/database";
 import { appRouter } from "../../src/server/api/root";
 import type { Context } from "../../src/server/api/trpc";
 import inventory from "../../skills/imagens-equipamentos/assets/equipamentos.json";
-import { formatDate } from "../../src/lib/contracts";
+import { categoryLabels, formatDate } from "../../src/lib/contracts";
 
 let env: Awaited<ReturnType<typeof startDatabase>>;
 let f: Awaited<ReturnType<typeof fixtures>>;
@@ -105,6 +105,22 @@ test("spec 002 test_ca_04 e spec 003 test_ca_01_ca_04 catálogo exibe fotos e cr
     page.getByText("12 equipamentos · 9 disponíveis agora"),
   ).toBeVisible();
   await expect(page.locator("img[src*='/equipamentos/TI-']")).toHaveCount(12);
+  for (const item of inventory) {
+    const photo = page.locator(`img[src*="/equipamentos/${item.patrimonio}/"]`);
+    const maintenance = item.situacao === "manutencao";
+    const card = page
+      .getByRole(maintenance ? "article" : "link")
+      .filter({ has: photo });
+    await expect(
+      card.getByRole("heading", { name: item.nome, exact: true }),
+    ).toBeVisible();
+    await expect(card).toContainText(
+      categoryLabels[category[item.categoria as keyof typeof category]],
+    );
+    await expect(card).toContainText(
+      maintenance ? "Em manutenção" : "Disponível",
+    );
+  }
   await expect(page.locator('a[href="/catalogo/TI-0010"]')).toHaveCount(0);
   const image = page.getByRole("img", { name: inventory[0].nome, exact: true });
   await expect(image).toHaveAttribute(
