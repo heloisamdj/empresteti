@@ -1,5 +1,7 @@
 # Tarefas — Front-end da v1
 
+Estado em 04/11/2026: tarefas 1–10 implementadas e verificadas localmente. Foram aprovados estrutura, lint, tipos, 19 testes Vitest, build e dez testes Playwright; após a última correção de movimento, build e teste CA-12 foram repetidos e passaram. Evidências e limites em `docs/auditoria-aulas.md`; publicação e conta Supabase real não são marcadas como verificadas por esses testes.
+
 1. Preparar a estrutura do projeto Next.js e as configurações da stack. Cobre CA-12.
 2. Criar tokens visuais, shell autenticado, sidebar, header e componentes compartilhados. Cobre CA-12.
 3. Implementar autenticação e proteção de rotas. Cobre CA-01.

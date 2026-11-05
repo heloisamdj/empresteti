@@ -1,0 +1,44 @@
+name: Verificações
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run check:project
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+  migrate-production:
+    name: Aplicar migrations autorizadas do EmpresTI
+    needs: validate
+    if: github.event_name == 'push' && github.repository == 'heloisamdj/empresteti' && github.ref == 'refs/heads/fix/prisma-build' && contains(github.event.head_commit.message, '[migrate-db]')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    concurrency:
+      group: empresti-supabase-production-migrations
+      cancel-in-progress: false
+    env:
+      EMPRESTI_DATABASE_JOB: "1"
+      NEXT_PUBLIC_SUPABASE_URL: https://pkncugbogwvxyulbngjr.supabase.co
+      DATABASE_URL: ${{ secrets.EMPRESTI_DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.EMPRESTI_DIRECT_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: node scripts/deploy-database.mjs migrate

@@ -1,4 +1,24 @@
 # Checklist de verificação — antes de finalizar qualquer tarefa
+> leitor: agente
+
+## Quando
+Antes de declarar tarefa ou spec pronta.
+
+## Procedimento executável
+1. `npm run check:project` e `npm run lint`.
+2. `npm run typecheck`.
+3. `npm test` (PostgreSQL descartável do zero).
+4. Espere o Vitest encerrar antes de `npm run build`: no Windows, o Prisma Client não pode ser regenerado com sua DLL em uso.
+5. `npm run test:e2e` ao tocar telas ou fluxo do usuário. O Playwright inicia `next start`, portanto usa o build de produção que acabou de passar.
+6. `git status --short`; liste os CA atendidos e registre pendências externas sem chamar a entrega de concluída.
+
+## Verificação
+Todos os checks aplicáveis passam; a spec requer também o verificador de spec-flow.md.
+
+## Não faça
+- Não rode testes contra banco remoto nem altere produção para fazer um check passar.
+
+## Revisão técnica
 
 Rode este checklist contra o código que você acabou de escrever ou alterar.
 Se qualquer item falhar, corrija antes de entregar — não relate a tarefa como

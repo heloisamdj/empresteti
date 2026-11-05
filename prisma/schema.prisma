@@ -179,6 +179,7 @@ model Loan {
   borrowedAt  DateTime  @default(now()) @map("borrowed_at")
   /// Prazo (PRD: 14 dias) — calculado no service: borrowedAt + 14d.
   dueDate     DateTime  @map("due_date")
+  returnRequestedAt DateTime? @map("return_requested_at")
   /// Devolução; NULL = empréstimo em aberto.
   returnedAt  DateTime? @map("returned_at")
   createdAt   DateTime  @default(now()) @map("created_at")

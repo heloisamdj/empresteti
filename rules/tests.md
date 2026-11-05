@@ -1,3 +1,6 @@
+# Testes
+> leitor: agente
+
 ## Quando
 Ao escrever, alterar ou remover qualquer teste.
 
@@ -9,4 +12,9 @@ Ao escrever, alterar ou remover qualquer teste.
    o mesmo dado, com outro usuário, não retorna.
 
 ## Verificação
-<COMANDO-TESTES> passa com o banco local recém-resetado.
+`npm test` e `npm run test:e2e` passam. Testcontainers aplica as migrations em PostgreSQL descartável novo em cada suíte.
+
+## Não faça
+- Não substitua Prisma/PostgreSQL por mocks nos testes de integração.
+- Não rode reset ou testes contra o Supabase remoto.
+- A simulação de identidade nos E2E fica somente em tests/: nunca crie login de teste no código da aplicação.

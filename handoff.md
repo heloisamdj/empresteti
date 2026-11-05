@@ -1,8 +1,20 @@
-# Handoff
+# Handoff — 05/11/2026
 
-1. Onde parei: tarefa 2 de `docs/specs/001-frontend/tasks.md` concluída; tokens, shell autenticado, sidebar, header e componentes compartilhados passam em lint e build.
-2. Commit e branch: não verificados, pois o Git recusou acesso por propriedade insegura do repositório.
-3. Banco local: nenhuma alteração aplicada.
-4. Publicação: nenhuma.
-5. Não recrie o scaffold nem importe o CSS completo do Phosphor no bundle: a base já existe e os ícones usam o CDN definido em `layout.md` para o build não travar.
-6. Próximo passo: implemente autenticação e proteção de rotas para CA-01.
+1. Publicação e integração concluídas. EmpresTI disponível em https://empresteti-hzyj.vercel.app/. Skill frontend-design ativa. Login com conta real ainda não exercitado. Detalhes em docs/publicacao.md.
+2. Git: fix/prisma-build enviada ao GitHub; base f66add3/1a31b67 rebased sobre origin/main, seguida das correções finais de catálogo e registros. Noreply da conta heloisamdj resolveu bloqueio de autoria na Vercel; nenhuma alteração enviada à main.
+3. Banco local: migrations 0001/0002 e seed suporte_ti aplicados em empresti-helo-dev, Postgres16 localhost:5433; MLOps5432 preservado. Nenhuma migration remota aplicada.
+4. Checks após correções: estrutura, lint (um aviso antigo), tipos,19Vitest,build,10Playwright passaram. E2E usa contexto de identidade simulado; não comprova login real.
+5. Vercel: projeto empresteti-hzyj (prj_zaWeyVUhtZaqE4GH8SOfl6N4AsWm), equipe helo-98ee. CLI autorizado. Prévias --prod --skip-domain falharam no preflight; domínio principal continua antigo.
+6. Causa confirmada: Vercel usa Auth fobuhqvjheblmwbiwera e DATABASE_URL/DIRECT_URL localhost. Variáveis sensitive não podem ser recuperadas por API; não tentar contornar. Uso normal pelo job mantém valores na plataforma, sem exportação.
+7. Supabase: usuário logou no navegador integrado; AUTORIZOU usar/reativar pkncugbogwvxyulbngjr. Agora Healthy, public sem tabelas/views; Auth HTTP200 com chave pública capturada em .vercel/supabase-public.json (ignorado). Isso substitui não trocar fobuh. Nenhuma chave secreta lida.
+8. Próximo: obter/configurar conexões e URL/chave pública DO PROJETO pkn... sem divulgar valores, conferir banco existente e provisionamento da conta real, resolver job de migration conforme ADR001 §9 antes de executar e só promover após sucesso.
+9. Job migrate-production em .github/workflows/checks.yml, após validate, só no push da fix/prisma-build com marcador [migrate-db]. O run 41957007293 do commit 1479d23 passou. Os dois secrets de conexão já foram criados no repo autorizado. Só usar o marcador depois de configurar e confirmar os grants no Supabase.
+10. Skills: frontend-design enabledtrue no scanner nativo; Junctions .agents/skills apontam à fonte única skills/. Provas independentes positiva e negativa concluídas; template não ativado. Ver docs/auditoria-skills-mcp.md.
+11. NÃO mudar senha do banco, sobrescrever schema existente, reutilizar chaves fobuh no pkn, imprimir segredos ou confundir prévia com publicação concluída. No Windows, encerrar testes antes de regenerar Prisma.
+12. Usuário autorizou empresti_v1 e secrets. A função foi criada e autenticou no pooler de sessão com a credencial de .vercel/production-access.json (ignorado); CREATE no banco e em public ainda falsos. Não criar outro role nem trocar a senha.
+13. CLI Vercel autenticou como heloisamdj. Quatro variáveis autorizadas atualizadas e confirmadas como sensitive, com Production e Preview já configurados. .vercelignore agora também exclui .vercel/.
+14. O painel integrado do Supabase travou no carregamento, inclusive na rota de login e em nova aba. Usuária confirmou o mesmo no navegador dela. Status oficial sem incidente correspondente; HTML e módulos públicos iniciais responderam HTTP 200. Ainda falta acesso administrativo. Configure grants conforme docs/plano-acesso-producao.md, acompanhe a migration e revogue CREATE no banco antes de promover. Login real pendente.
+15. Candidata dpl_9FgLL6STXuhUnNXF8fRSVYByLeDE READY, URL empresteti-hzyj-3gcvz96qz-helo-98ee.vercel.app. Preflight da Vercel conectou pelos dois poolers e confirmou schema vazio e duas migrations pendentes. Candidata protegida por Vercel Authentication; domínio principal ainda na versão anterior. Não promover antes de validar a migration e a revogação.
+16. Usuária abriu SQL Editor no próprio navegador com method=github, mas sessão não aparece no IAB. Verificação confirmou membership de postgres já presente, limite de conexões -1 e CREATE falso. Enviado SQL operacional para ela rodar. Após confirmar os dois CREATE, dispare CI e peça revogação de CREATE no banco ao concluir.
+17. Grants confirmados e commit 722244b enviado à fix/prisma-build. Run 42012172978 passou, com migrations 0001_init e 0002_return_request, sete tabelas com RLS e tenant suporte_ti confirmados nos dois poolers. Revogação do CREATE no banco solicitada à usuária e ainda pendente na última consulta. Após confirmar a revogação nas duas conexões, promover a candidata dpl_9FgLL6STXuhUnNXF8fRSVYByLeDE e testar o domínio público.
+18. Usuária revogou CREATE no banco; confirmado nos dois poolers. Implantação dpl_9FgLL6STXuhUnNXF8fRSVYByLeDE promovida. Domínio público confirmou health HTTP 200 e banco conectado, login HTTP 200, redirecionamento do catálogo para login no navegador e API do catálogo HTTP 401 sem sessão.
