@@ -42,13 +42,13 @@ O redimensionamento poderia usar uma biblioteca nativa de imagem ou o Playwright
 
 O [SKILL.md](skills/imagens-equipamentos/SKILL.md) define quando usar e quando pedir revisão. A [referência](skills/imagens-equipamentos/references/fluxo.md) explica a operação, a atribuição e o Storage. O [script](skills/imagens-equipamentos/scripts/fotos.mjs) controla origem, dimensões, IDs, hashes e manifesto. A revisão humana avalia pessoas, marcas, textos e conteúdo de tela. A skill não tem cliente de upload nem credencial de publicação.
 
-O teste local inicial simulou respostas e gerou 12 WebP de 800 × 600, com a mesma saída na repetição e rejeição de conteúdo duplicado. A busca real no Pixabay deixou nove imagens para aprovação humana. Sete arquivos foram reprovados na inspeção em tamanho final. Três patrimônios ainda precisam de novos candidatos. [Revisão das fotos](docs/specs/002-dados-iniciais/revisao-fotos.md) · [Documentação do Pixabay](https://pixabay.com/api/docs/)
+O teste local inicial simulou respostas e gerou 12 WebP de 800 × 600, com a mesma saída na repetição e rejeição de conteúdo duplicado. A busca real no Pixabay reuniu 12 fotos, incluindo substituições para TI-0007, TI-0011 e TI-0012. Todos os arquivos reais foram decodificados, e seus IDs, hashes e créditos foram conferidos. A responsável aprovou o lote em 05/11/2026. [Revisão das fotos](docs/specs/002-dados-iniciais/revisao-fotos.md) · [Documentação do Pixabay](https://pixabay.com/api/docs/)
 
 ## 5. Subagente
 
 O [papel nativo](.codex/agents/verificador-spec.toml) roda em sessão nova. O [executor](scripts/review-spec.mjs) prepara um pacote com a spec, o plano, as tarefas, os testes e as fontes da revisão indicada. O verificador lê o pacote versionado e separa o que observou dos resultados recebidos. Como o projeto é monolítico, o mesmo pacote cobre tela, API e persistência. O principal ou o CI executa os testes com PostgreSQL descartável.
 
-A execução usa sandbox de leitura e desativa shell, apps, plugins e aprovações. O [gate no CI](.github/workflows/checks.yml) verifica o parecer no PR e na tag da prática. Ele exige um resultado para cada CA e confere que a revisão ainda corresponde aos arquivos entregues. A checagem foi provada localmente. A configuração de proteção da branch no GitHub não foi alterada.
+A execução usa sandbox de leitura e desativa shell, apps, plugins e aprovações. A rodada final recebe também o diff da base escolhida. O [gate no CI](.github/workflows/checks.yml) verifica o parecer no PR da branch da prática e na tag. Exige as duas specs, todos os checks e uma referência a teste de cada CA. Também confere que a revisão corresponde aos arquivos entregues. A proteção do GitHub e a sequência da candidata na Vercel estão no [roteiro de operação](docs/specs/002-dados-iniciais/operacao.md).
 
 ## 6. Verificador em ação
 
@@ -68,6 +68,6 @@ O verificador deveria rodar testes e também operar em leitura. Testes e build g
 
 ## 8. Pendências
 
-- Substituir os candidatos reprovados para TI-0007, TI-0011 e TI-0012 e aprovar as 12 fotos do Pixabay.
+- A API do GitHub confirmou que a `main` está desprotegida e que o plano atual não permite aplicar a regra ao repositório privado. O gate foi testado localmente. A execução dos checks no PR da prática e a conferência humana antes do merge seguem pendentes.
 - O responsável executa a migration e a carga, publica as fotos, provisiona o professor e confirma zero empréstimos. [Procedimento](docs/specs/002-dados-iniciais/operacao.md)
 - Conferir no domínio público com conta de teste, registrar as tabelas finais do verificador e marcar `entrega-pratica` após aprovação das duas specs.

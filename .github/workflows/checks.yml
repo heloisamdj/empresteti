@@ -12,6 +12,7 @@ jobs:
       - run: npm ci
       - run: npx prisma generate
       - run: npm run check:project
+      - run: node --test scripts/check-spec-review.test.mjs
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
@@ -20,14 +21,13 @@ jobs:
       - run: npm run test:e2e
   spec-review:
     name: Parecer obrigatório da prática
-    if: github.event_name == 'pull_request' || github.ref == 'refs/tags/entrega-pratica'
+    if: (github.event_name == 'pull_request' && github.head_ref == 'pratica/sdd-subagentes') || github.ref == 'refs/tags/entrega-pratica'
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@v4

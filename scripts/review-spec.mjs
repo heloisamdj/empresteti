@@ -3,14 +3,16 @@ import { mkdtempSync, readFileSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join } from "node:path";
 
-const [spec, ref, checksPath] = process.argv.slice(2);
+const [spec, ref, checksPath, baseRef] = process.argv.slice(2);
+const shaPattern = /^[a-f0-9]{7,40}$/;
 if (
   !/^docs\/specs\/\d{3}-[a-z0-9-]+\/spec\.md$/.test(spec ?? "") ||
-  !/^[a-f0-9]{7,40}$/.test(ref ?? "") ||
+  !shaPattern.test(ref ?? "") ||
+  (baseRef !== undefined && !shaPattern.test(baseRef)) ||
   !checksPath
 ) {
   throw new Error(
-    "Uso: node scripts/review-spec.mjs <spec.md> <SHA> <resultado-dos-checks.txt>",
+    "Uso: node scripts/review-spec.mjs <spec.md> <SHA> <resultado-dos-checks.txt> [SHA-base]",
   );
 }
 const revision = execFileSync(
@@ -21,6 +23,24 @@ const revision = execFileSync(
   },
 ).trim();
 const checks = readFileSync(checksPath, "utf8");
+const diff = baseRef
+  ? execFileSync(
+      "git",
+      [
+        "diff",
+        "--no-ext-diff",
+        "--no-textconv",
+        baseRef,
+        revision,
+        "--",
+        ".",
+        ":(exclude)docs/specs/*/verificacao.md",
+        ":(exclude)ENTREGA.md",
+        ":(exclude)handoff.md",
+      ],
+      { encoding: "utf8" },
+    )
+  : "Nenhuma base fornecida.";
 const tempRoot = realpathSync(tmpdir());
 const snapshot = mkdtempSync(join(tempRoot, "empresti-review-"));
 
@@ -39,13 +59,14 @@ try {
     .split(/\r?\n/)
     .filter(
       (path) =>
-        /^(AGENTS\.md|agents\/verificador-spec\.md|rules\/[a-z-]+\.md|docs\/(PRD\.md|adr\/[^/]+\.md)|package\.json)$/.test(
+        !path.endsWith("/verificacao.md") &&
+        (/^(AGENTS\.md|agents\/verificador-spec\.md|rules\/[a-z-]+\.md|docs\/(PRD\.md|adr\/[^/]+\.md)|package\.json)$/.test(
           path,
         ) ||
-        path.startsWith(`${spec.slice(0, -"spec.md".length)}`) ||
-        /^(src|tests|prisma|scripts|skills)\/.*\.(tsx?|mjs|sql|prisma|md|json)$/.test(
-          path,
-        ),
+          path.startsWith(`${spec.slice(0, -"spec.md".length)}`) ||
+          /^(src|tests|prisma|scripts|skills)\/.*\.(tsx?|mjs|sql|prisma|md|json)$/.test(
+            path,
+          )),
     );
   const sources = files
     .map(
@@ -55,13 +76,16 @@ try {
     .join("\n");
   const prompt = [
     "Acione o subagente verificador-spec em contexto novo para esta revisão.",
-    "Passe ao subagente o pacote de fontes, o SHA e os checks. Não passe outra conversa.",
+    "Passe ao subagente o pacote de fontes, o diff, o SHA e os checks. Não passe outra conversa.",
     "O verificador lê os arquivos versionados fornecidos abaixo. Ferramentas de shell estão desativadas.",
     `Spec: ${spec}`,
     `SHA: ${revision}`,
     "<checks>",
     checks,
     "</checks>",
+    "<diff>",
+    diff,
+    "</diff>",
     "<fontes>",
     sources,
     "</fontes>",

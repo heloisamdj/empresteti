@@ -42,10 +42,25 @@ Revisão: <SHA completo do código e da spec revisados>
 
 | CA | evidência (arquivo:linha do teste) | status | observação |
 | --- | --- | --- | --- |
-status: ATENDIDO · REPROVADO · SEM TESTE · AMBÍGUO · OUTRO REPOSITÓRIO
+status: ATENDIDO · REPROVADO · SEM TESTE · AMBÍGUO · PENDENTE · OUTRO REPOSITÓRIO
 (OUTRO REPOSITÓRIO = a prova deste CA vive no back ou no front que não
 está aberto aqui; não conta como falha, mas precisa ser verificado lá)
 
-Checks: <comando> → passou | falhou | pendente (uma linha por comando)
+Na prática, cite a linha exata da declaração de um teste identificado com a
+spec e o CA. Evidências de produção podem complementar esse teste.
+
+Para a prática, escreva uma linha por comando abaixo, sem Markdown nem
+comentário na mesma linha. Use `passou`, `falhou` ou `pendente` após a seta.
+Descreva avisos e limitações em parágrafo separado.
+
+Checks: npm run check:project → <resultado>
+Checks: npm run lint → <resultado>
+Checks: npm run typecheck → <resultado>
+Checks: npm test → <resultado>
+Checks: npm run build → <resultado>
+Checks: npm run test:e2e → <resultado>
+Checks: git diff --check → <resultado>
+Checks: git status --short → <resultado>
+
 Fora de escopo: <lista> | nada encontrado
 Veredito: PRONTA | NÃO PRONTA — <motivo em uma frase>

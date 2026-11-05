@@ -1,16 +1,53 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 const git = (...args) => execFileSync("git", args, { encoding: "utf8" }).trim();
 const mode = process.argv[2] ?? "review";
+if (!["review", "delivery"].includes(mode)) {
+  throw new Error("Use review ou delivery.");
+}
 const root = "docs/specs";
-const specs = readdirSync(root).filter((name) => /^00[23]-/.test(name));
+const specs = ["002-dados-iniciais", "003-solicitar-emprestimo"];
+const requiredChecks = [
+  "npm run check:project",
+  "npm run lint",
+  "npm run typecheck",
+  "npm test",
+  "npm run build",
+  "npm run test:e2e",
+  "git diff --check",
+  "git status --short",
+];
 const evidenceFiles = [
   ":(exclude)docs/specs/*/verificacao.md",
   ":(exclude)ENTREGA.md",
   ":(exclude)handoff.md",
 ];
 const failures = [];
+if (git("status", "--porcelain")) {
+  failures.push("Rode o gate com a árvore limpa no commit a ser entregue.");
+}
+
+function citesCriterionTest(evidence, spec, criterion) {
+  const references = evidence.matchAll(
+    /\b(tests\/[\w./-]+\.(?:spec|test)\.[jt]sx?):(\d+)\b/g,
+  );
+  for (const [, file, line] of references) {
+    if (file.split("/").includes("..") || !existsSync(file)) continue;
+    const declaration = readFileSync(file, "utf8").split(/\r?\n/)[
+      Number(line) - 1
+    ];
+    const title = declaration?.match(/^\s*(?:test|it)\(\s*["'`]([^"'`]*)/)?.[1];
+    const ids = title?.match(
+      new RegExp(`\\bspec ${spec.slice(0, 3)} test_((?:ca_\\d+_?)+)`),
+    )?.[1];
+    if (
+      ids?.match(/ca_\d+/g)?.includes(criterion.toLowerCase().replace("-", "_"))
+    )
+      return true;
+  }
+  return false;
+}
 
 for (const spec of specs) {
   const folder = `${root}/${spec}`;
@@ -25,12 +62,14 @@ for (const spec of specs) {
   }
 
   const report = readFileSync(reportPath, "utf8");
-  const revision = report.match(/^Revisão: ([a-f0-9]{40})\s*$/m)?.[1];
+  const revisions = report.match(/^Revisão:.*$/gm) ?? [];
+  const revision = revisions[0]?.match(/^Revisão: ([a-f0-9]{40})\s*$/)?.[1];
   const verdicts = report.match(/^Veredito:.*$/gm) ?? [];
   if (
     !revision ||
+    revisions.length !== 1 ||
     verdicts.length !== 1 ||
-    !/^Veredito: PRONTA(?:\s|$)/.test(verdicts[0])
+    !/^Veredito: PRONTA(?: — \S.*)?$/.test(verdicts[0])
   ) {
     failures.push(
       `${spec}: o verificador precisa aprovar uma revisão identificada.`,
@@ -48,31 +87,26 @@ for (const spec of specs) {
       .split(/\r?\n/)
       .filter((line) => line.split("|")[1]?.trim() === criterion);
     const cells = rows[0]?.split("|").map((cell) => cell.trim());
-    const citedFiles = [
-      ...(cells?.[2] ?? "").matchAll(
-        /\b((?:tests|skills|scripts|docs)\/[\w./-]+):(\d+)\b/g,
-      ),
-    ];
-    const hasEvidence = citedFiles.some(
-      ([, file, line]) =>
-        !file.split("/").includes("..") &&
-        existsSync(file) &&
-        Number(line) > 0 &&
-        Number(line) <= readFileSync(file, "utf8").split("\n").length,
-    );
-    if (rows.length !== 1 || cells[3] !== "ATENDIDO" || !hasEvidence) {
+    if (
+      rows.length !== 1 ||
+      cells?.[3] !== "ATENDIDO" ||
+      !citesCriterionTest(cells[2] ?? "", spec, criterion)
+    ) {
       failures.push(
-        `${spec}: ${criterion} precisa de uma evidência com arquivo e linha.`,
+        `${spec}: ${criterion} precisa citar a linha de declaração de um teste identificado com a spec e o CA.`,
       );
     }
   }
   const checks = report
     .split(/\r?\n/)
-    .filter((line) => line.startsWith("Checks:"));
+    .filter((line) => line.startsWith("Checks:"))
+    .map((line) => line.trimEnd());
   if (
     !criteria.length ||
-    !checks.length ||
-    checks.some((line) => !/→ passou\s*$/.test(line))
+    checks.length !== requiredChecks.length ||
+    !requiredChecks.every((command) =>
+      checks.includes(`Checks: ${command} → passou`),
+    )
   ) {
     failures.push(`${spec}: CAs ou checks incompletos.`);
   }
@@ -93,7 +127,7 @@ for (const spec of specs) {
   }
 }
 
-if (mode === "delivery" && (specs.length !== 2 || !existsSync("ENTREGA.md"))) {
+if (mode === "delivery" && !existsSync("ENTREGA.md")) {
   failures.push(
     "A tag da prática exige as duas specs verificadas e o ENTREGA.md.",
   );

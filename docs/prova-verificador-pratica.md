@@ -12,3 +12,10 @@ O controle estático falhou com o erro plantado e passou após a reversão. As r
 A primeira tentativa de ler arquivos via shell foi bloqueada pelo sandbox no Windows. O procedimento corrigido passou ao verificador o conteúdo versionado da revisão, em uma sessão nova com shell, apps, plugins e aprovações desativados. Os checks são executados pelo principal ou pelo CI e enviados como evidência. A regra de independência fica em `agents/verificador-spec.md` e a checagem do parecer fica em `scripts/check-spec-review.mjs`.
 
 O gate foi testado em repositório descartável. Rejeitou parecer ausente, reprovado, obsoleto e tag de entrega incompleta. Aceitou parecer válido referente ao conteúdo revisado. A prova não configurou proteção de branch no GitHub.
+
+A regressão do gate pode ser repetida com
+`node --test scripts/check-spec-review.test.mjs`. O teste exige as duas specs
+mesmo no modo PR, recusa check avulso, referência fora da declaração do teste,
+teste da outra spec e parecer que só existe na árvore de trabalho. Também
+confere os modos PR e entrega com pareceres completos e reprova mudança
+posterior no código.
