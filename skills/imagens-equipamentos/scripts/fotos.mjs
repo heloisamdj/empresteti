@@ -16,9 +16,10 @@ const extraQueries = {
   "TI-0004": "laptop isolated keyboard silver",
   "TI-0005": "computer monitor blank screen",
   "TI-0006": "computer desktop monitor blank display",
-  "TI-0007": "lcd monitor isolated white background",
+  "TI-0007": "flat screen display computer monitor",
   "TI-0009": "usb type c connector cable",
-  "TI-0012": "point and shoot pocket camera",
+  "TI-0011": "usb webcam isolated camera",
+  "TI-0012": "small point and shoot digital camera compact",
 };
 const inventory = JSON.parse(
   await readFile(
