@@ -22,7 +22,10 @@ const category = {
 };
 const literal = (value) => "'" + value.replaceAll("'", "''") + "'";
 
-export function inventorySql(manifest, { includeTeacher = false } = {}) {
+export function inventorySql(
+  manifest,
+  { includeTeacher = false, supabaseEditor = false } = {},
+) {
   const images = manifest.images ?? [];
   if (
     manifest.provider !== "pixabay" ||
@@ -61,8 +64,9 @@ DECLARE
   item record;
   existing public.equipments%ROWTYPE;
   teacher_id uuid;
-  teacher_auth_id uuid;
+  teacher_auth_id uuid;${supabaseEditor ? editorDeclarations : ""}
 BEGIN
+  ${includeTeacher ? teacherLookup : ""}${supabaseEditor ? editorSetup : ""}
   SELECT id INTO STRICT tenant FROM public.tenants WHERE slug = 'suporte_ti';
   FOR item IN SELECT * FROM (VALUES
     ${values.join(",\n    ")}
@@ -86,14 +90,20 @@ BEGIN
         WHERE id = existing.id;
     END IF;
   END LOOP;
-  ${includeTeacher ? teacherSql : ""}
+  ${includeTeacher ? teacherSql : ""}${supabaseEditor ? editorRestore : ""}
 END
 $pratica$;`;
 }
 
+const teacherLookup = `
+  BEGIN
+    SELECT id INTO STRICT teacher_auth_id FROM auth.users
+      WHERE email = 'marcelo.grilo@institutojef.org.br' AND email_confirmed_at IS NOT NULL;
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    RAISE EXCEPTION 'Confirme a conta do professor no Supabase Auth antes da carga.';
+  END;`;
+
 const teacherSql = `
-  SELECT id INTO STRICT teacher_auth_id FROM auth.users
-    WHERE email = 'marcelo.grilo@institutojef.org.br' AND email_confirmed_at IS NOT NULL;
   INSERT INTO public.users (id, auth_user_id, name, email, updated_at)
     VALUES (gen_random_uuid(), teacher_auth_id::text, 'Marcelo Grilo',
       'marcelo.grilo@institutojef.org.br', CURRENT_TIMESTAMP)
@@ -111,6 +121,48 @@ const teacherSql = `
     RAISE EXCEPTION 'Vínculo do professor tem um perfil diferente do esperado';
   END IF;`;
 
+const editorDeclarations = `
+  previous_inherit boolean;
+  restore_membership boolean := false;`;
+
+// O SQL Editor precisa ler auth.users como postgres e gravar nas tabelas
+// do aplicativo. A associação é restaurada no mesmo bloco da carga.
+const editorSetup = `
+  IF current_user <> 'postgres' THEN
+    RAISE EXCEPTION 'Execute a carga no SQL Editor com o papel postgres.';
+  END IF;
+  IF (
+    SELECT count(*) FROM pg_class
+    WHERE relnamespace = 'public'::regnamespace
+      AND relname IN ('equipments', 'tenants', 'users', 'memberships', 'loans')
+      AND relowner = 'empresti_v1'::regrole
+  ) <> 5 THEN
+    RAISE EXCEPTION 'As tabelas da carga não pertencem ao papel empresti_v1.';
+  END IF;
+  IF NOT pg_has_role(current_user, 'empresti_v1', 'USAGE') THEN
+    SELECT inherit_option INTO previous_inherit
+    FROM pg_auth_members
+    WHERE roleid = 'empresti_v1'::regrole
+      AND member = 'postgres'::regrole
+      AND grantor = 'postgres'::regrole;
+
+    IF previous_inherit IS NULL THEN
+      GRANT empresti_v1 TO postgres WITH INHERIT TRUE, SET FALSE GRANTED BY postgres;
+    ELSE
+      GRANT empresti_v1 TO postgres WITH INHERIT TRUE GRANTED BY postgres;
+    END IF;
+    restore_membership := true;
+  END IF;`;
+
+const editorRestore = `
+  IF restore_membership THEN
+    IF previous_inherit IS NULL THEN
+      REVOKE empresti_v1 FROM postgres GRANTED BY postgres;
+    ELSE
+      GRANT empresti_v1 TO postgres WITH INHERIT FALSE GRANTED BY postgres;
+    END IF;
+  END IF;`;
+
 if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(process.argv[1]).href
@@ -120,6 +172,7 @@ if (
   console.log(
     inventorySql(JSON.parse(readFileSync(file, "utf8")), {
       includeTeacher: true,
+      supabaseEditor: true,
     }),
   );
 }

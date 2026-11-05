@@ -69,5 +69,5 @@ O verificador deveria rodar testes e também operar em leitura. Testes e build g
 ## 8. Pendências
 
 - A API do GitHub confirmou que a `main` está desprotegida e que o plano atual não permite aplicar a regra ao repositório privado. O gate foi testado localmente. A execução dos checks no PR da prática e a conferência humana antes do merge seguem pendentes.
-- O responsável executa a migration e a carga, publica as fotos, provisiona o professor e confirma zero empréstimos. [Procedimento](docs/specs/002-dados-iniciais/operacao.md)
+- A responsável executou a migration, publicou as 12 fotos, repetiu a carga e conferiu o vínculo do professor com zero empréstimos. Falta validar o catálogo e o login no site candidato. [Evidência e procedimento](docs/specs/002-dados-iniciais/operacao.md)
 - Conferir no domínio público com conta de teste, registrar as tabelas finais do verificador e marcar `entrega-pratica` após aprovação das duas specs.

@@ -27,17 +27,36 @@ O CI aponta reprovação, mas o GitHub não impede o merge automaticamente.
 4. O responsável provisiona e confirma a conta do professor no Supabase Auth com a senha padrão informada na atividade. A senha fica no serviço de autenticação.
 5. Revise o arquivo local `.equipamentos-fotos/carga.sql` e execute no SQL Editor do projeto de produção após a migration, o upload e a confirmação da conta do professor. O SQL usa o tenant `suporte_ti`, exige a conta confirmada e aborta diante de colisões ou empréstimos preexistentes do professor. Use o comando abaixo se precisar regenerar o arquivo.
 
+   A primeira tentativa retornou `42501` em `equipments`. No SQL Editor,
+   selecione o papel `postgres` e use o arquivo regenerado. O bloco confere
+   que as cinco tabelas da carga pertencem ao papel `empresti_v1`, habilita
+   a herança apenas se necessária e restaura a associação original antes de
+   concluir. Qualquer erro reverte o bloco inteiro.
+
 ```powershell
 node scripts/prepare-practice-data.mjs .equipamentos-fotos/manifesto.json |
   Set-Content -Encoding utf8NoBOM .equipamentos-fotos/carga.sql
 ```
 
-6. Rode `.equipamentos-fotos/conferir-carga.sql`, que consulta os dados sem gravar. Repita a carga e a conferência. As duas consultas devem retornar 12 equipamentos conformes, 12 fotos nos caminhos esperados, 12 objetos no bucket público, um vínculo de colaborador para o professor e zero empréstimos para ele. A conferência dos caminhos inclui as três situações de manutenção. A demonstração de solicitações usa outra conta. Registre o resultado sem publicar identificadores de login ou segredos.
+6. Rode `.equipamentos-fotos/conferir-carga.sql`, que consulta os dados sem gravar. Repita a carga e a conferência. Devem aparecer 12 equipamentos conformes, 12 fotos nos caminhos esperados, um vínculo de colaborador para o professor e zero empréstimos para ele. A conferência inclui as três situações de manutenção. Se o total de objetos do bucket for maior, identifique a diferença pelos caminhos e pelo tipo de objeto. A demonstração de solicitações usa outra conta.
 
 Em 05/11/2026, a carga com o manifesto aprovado foi executada duas vezes
 em PostgreSQL descartável. As duas conferências deram o mesmo resultado
 esperado. O Auth e o Storage foram simulados nesse teste. A execução e a
 conferência no Supabase de produção ficam com a responsável.
+
+Em 05/11/2026, o push da responsável disparou o job do commit `55392a5`.
+O job confirmou a aplicação da `0003_equipment_photos`, o tenant
+`suporte_ti` e RLS habilitado nas sete tabelas de domínio.
+[Log do job](https://github.com/heloisamdj/empresteti/actions/runs/42087414691/job/127457734049)
+
+Após a primeira carga bem-sucedida, a responsável repetiu o bloco e executou a
+consulta de conferência no Supabase de produção. A consulta retornou 12
+equipamentos conformes, 12 fotos nos caminhos corretos, 13 objetos no bucket
+público, um vínculo confirmado de colaborador e zero empréstimos do professor.
+O 13º objeto respondeu sem sessão no caminho `.emptyFolderPlaceholder` na
+raiz do bucket, com zero bytes. É o marcador de pasta usado pelo painel.
+[Comportamento do painel](https://supabase.com/blog/storage-beta#the-case-of-the-disappearing-folders)
 
 ## Validação publicada e fechamento do PR
 
