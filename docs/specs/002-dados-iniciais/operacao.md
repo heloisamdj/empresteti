@@ -67,10 +67,32 @@ raiz do bucket, com zero bytes. É o marcador de pasta usado pelo painel.
    conta do professor. Em seguida, o responsável promove a candidata com
    `vercel promote <id-da-implantação>`. Isso permite colher evidência no
    domínio público antes de integrar o PR.
+
+   A Vercel confirmou a candidata `dpl_ACVkuZAwg78M4gDueceHpSJ47quY` como
+   pronta e em espera de promoção, vinculada ao commit `d4e95c5`. Na
+   conferência pelo navegador, a responsável confirmou banco conectado e
+   fotos visíveis no catálogo.
+   [Implantação candidata](https://vercel.com/helo-98ee/empresteti-hzyj/ACVkuZAwg78M4gDueceHpSJ47quY)
+
 2. Confirme primeiro os dados no domínio público. Depois, com conta separada,
    valide o empréstimo imediato, o filtro de disponibilidade, o prazo em
    Meus empréstimos e a recusa do sexto pedido. Confirme novamente zero
    empréstimos na conta do professor.
+
+   Em 05/11/2026, a responsável promoveu a candidata. A API da Vercel
+   confirmou que o domínio público passou a servir a implantação
+   `dpl_ACVkuZAwg78M4gDueceHpSJ47quY` do commit `d4e95c5`. O login
+   respondeu HTTP 200, a rota de saúde retornou banco conectado e a consulta
+   de equipamentos sem sessão retornou HTTP 401.
+   [Saúde do site publicado](https://empresteti-hzyj.vercel.app/api/trpc/health)
+
+   Após a demonstração com a conta de teste, a consulta de leitura voltou a
+   confirmar 12 equipamentos com foto, os três patrimônios em manutenção,
+   o vínculo `MEMBER` e zero empréstimos do professor. A responsável
+   cadastrou o professor no Auth com a senha indicada na atividade, e a
+   consulta de carga confirmou a identidade correspondente.
+   A conta fica reservada para a correção, conforme o enunciado.
+
 3. Registre evidências sem credenciais nas pastas das specs. Com o código e
    essas evidências versionados, rode o verificador de cada spec com o mesmo
    SHA, a base da prática e os resultados dos checks locais. Registre os dois

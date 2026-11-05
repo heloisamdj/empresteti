@@ -1,11 +1,11 @@
 # Entrega da prática SDD
 
-**Estado: implementação local verificada. Publicação e pareceres finais pendentes.**
+**Estado: prática publicada. Fluxo de empréstimo conferido com a conta de teste. Pareceres finais pendentes.**
 
 ## Links
 
-- [Repositório EmpresTI](https://github.com/heloisamdj/empresteti), monolito Next.js com tRPC. A prática está na branch local `pratica/sdd-subagentes`.
-- [Produção na Vercel](https://empresteti-hzyj.vercel.app/). O link ainda serve a versão anterior a esta prática.
+- [Repositório EmpresTI](https://github.com/heloisamdj/empresteti), monolito Next.js com tRPC. A prática está na branch `pratica/sdd-subagentes` e no [PR #3](https://github.com/heloisamdj/empresteti/pull/3).
+- [Produção na Vercel](https://empresteti-hzyj.vercel.app/). A prática foi promovida a partir do commit `d4e95c5`. A rota de saúde confirmou banco conectado.
 - Tag `entrega-pratica`: pendente de publicação e conferência.
 
 ## 1. Conflitos
@@ -69,5 +69,5 @@ O verificador deveria rodar testes e também operar em leitura. Testes e build g
 ## 8. Pendências
 
 - A API do GitHub confirmou que a `main` está desprotegida e que o plano atual não permite aplicar a regra ao repositório privado. O gate foi testado localmente. A execução dos checks no PR da prática e a conferência humana antes do merge seguem pendentes.
-- A responsável executou a migration, publicou as 12 fotos, repetiu a carga e conferiu o vínculo do professor com zero empréstimos. Falta validar o catálogo e o login no site candidato. [Evidência e procedimento](docs/specs/002-dados-iniciais/operacao.md)
+- A responsável executou a migration, publicou as 12 fotos, repetiu a carga e conferiu o vínculo do professor com zero empréstimos. A versão promovida passou pela demonstração de empréstimo no domínio público com a conta de teste. [Evidência da carga](docs/specs/002-dados-iniciais/operacao.md) · [Evidência do empréstimo](docs/specs/003-solicitar-emprestimo/evidencia-producao.md)
 - Conferir no domínio público com conta de teste, registrar as tabelas finais do verificador e marcar `entrega-pratica` após aprovação das duas specs.
