@@ -3,6 +3,8 @@ import { randomUUID } from "node:crypto";
 import { fixtures, startDatabase } from "../helpers/database";
 import { appRouter } from "../../src/server/api/root";
 import type { Context } from "../../src/server/api/trpc";
+import inventory from "../../skills/imagens-equipamentos/assets/equipamentos.json";
+import { inventorySql } from "../../scripts/prepare-practice-data.mjs";
 
 let env: Awaited<ReturnType<typeof startDatabase>>;
 let f: Awaited<ReturnType<typeof fixtures>>;
@@ -16,6 +18,68 @@ afterAll(async () => {
   if (env) await env.stop();
 });
 const input = { search: "", availableOnly: false, limit: 7 };
+
+it("spec 002 test_ca_01_ca_02_ca_03_ca_05 carga idempotente, fotos e vínculo do professor", async () => {
+  const manifest = {
+    status: "aprovado",
+    reviewedBy: "Teste local",
+    images: inventory.map(({ patrimonio }, i) => {
+      const hash = (i + 1).toString(16).padStart(64, "0");
+      return {
+        patrimonio,
+        pexelsId: i + 1,
+        author: "Fixture",
+        source: `https://www.pexels.com/photo/fixture-${i + 1}/`,
+        license: "https://www.pexels.com/license/",
+        sha256: hash,
+        storagePath: `${patrimonio}/${hash}.webp`,
+        width: 800,
+        height: 600,
+      };
+    }),
+  };
+  await env.db.$executeRaw`CREATE SCHEMA auth`;
+  await env.db
+    .$executeRaw`CREATE TABLE auth.users (id uuid PRIMARY KEY, email text, email_confirmed_at timestamptz)`;
+  const teacherUid = randomUUID();
+  await env.db
+    .$executeRaw`INSERT INTO auth.users VALUES (${teacherUid}::uuid, 'marcelo.grilo@institutojef.org.br', CURRENT_TIMESTAMP)`;
+  const sql = inventorySql(manifest, { includeTeacher: true });
+  await env.db.$executeRawUnsafe(sql);
+  await env.db.equipment.update({
+    where: {
+      tenantId_patrimony: { tenantId: f.tenant.id, patrimony: "TI-0001" },
+    },
+    data: { status: "OUT_OF_SERVICE" },
+  });
+  await env.db.$executeRawUnsafe(sql);
+  const items = await env.db.equipment.findMany({
+    where: { tenantId: f.tenant.id, patrimony: { startsWith: "TI-" } },
+    orderBy: { patrimony: "asc" },
+  });
+  expect(items.map((item) => item.patrimony)).toEqual(
+    inventory.map((item) => item.patrimonio),
+  );
+  expect(items.filter((item) => item.category === "CABLE")).toHaveLength(3);
+  expect(
+    items
+      .filter((item) => item.status === "MAINTENANCE")
+      .map((item) => item.patrimony),
+  ).toEqual(["TI-0004", "TI-0007", "TI-0010"]);
+  expect(items[0]?.status).toBe("OUT_OF_SERVICE");
+  expect(new Set(items.map((item) => item.photoPath)).size).toBe(12);
+  const teacher = await env.db.user.findUniqueOrThrow({
+    where: { authUserId: teacherUid },
+    include: { memberships: true, loans: true },
+  });
+  expect(teacher.memberships).toMatchObject([
+    { tenantId: f.tenant.id, role: "MEMBER" },
+  ]);
+  expect(teacher.loans).toHaveLength(0);
+  expect(() =>
+    inventorySql({ ...manifest, status: "aguarda-revisao-visual-final" }),
+  ).toThrow(/aprovação/);
+});
 
 describe("Critérios da spec 001 em PostgreSQL real", () => {
   it("test_ca_01_login exige sessão e vínculo, sem retornar tokens", async () => {

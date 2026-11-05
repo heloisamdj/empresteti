@@ -116,6 +116,7 @@ enum EquipmentCategory {
   MONITOR
   CAMERA
   ACCESSORY
+  CABLE
   PROJECTOR
 
   @@map("equipment_category")
@@ -143,6 +144,7 @@ model Equipment {
   /// Ex.: PAT-1042
   patrimony    String
   serialNumber String?           @map("serial_number")
+  photoPath    String?           @map("photo_path")
   /// Local de retirada (ex.: "Balcão · 2º andar").
   location     String?
   status       EquipmentStatus   @default(AVAILABLE)

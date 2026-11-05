@@ -5,6 +5,7 @@ export const categories = [
   "MONITOR",
   "CAMERA",
   "ACCESSORY",
+  "CABLE",
   "PROJECTOR",
 ] as const;
 export const categoryLabels: Record<(typeof categories)[number], string> = {
@@ -12,6 +13,7 @@ export const categoryLabels: Record<(typeof categories)[number], string> = {
   MONITOR: "Monitor",
   CAMERA: "Câmera",
   ACCESSORY: "Acessório",
+  CABLE: "Cabo",
   PROJECTOR: "Projetor",
 };
 export const loginInput = z

@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -30,6 +31,30 @@ import {
 } from "./ui";
 
 type Category = (typeof categories)[number];
+function PhotoCredit() {
+  return (
+    <a
+      href="https://www.pexels.com/"
+      className="w-fit text-xs text-[var(--accent-400)] underline underline-offset-2"
+    >
+      Fotos: Pexels
+    </a>
+  );
+}
+
+function EquipmentPhoto({ url, name }: { url: string; name: string }) {
+  return (
+    <Image
+      unoptimized
+      src={url}
+      alt={name}
+      width={800}
+      height={600}
+      className="aspect-[4/3] h-auto w-full rounded-lg object-cover"
+    />
+  );
+}
+
 function RuleNotice() {
   return (
     <Notice className="bg-[linear-gradient(90deg,#0E1530,#0B1128)] px-4 py-[13px] text-[12.5px] text-[var(--text-secondary)] [&>i]:text-[var(--accent-400)]">
@@ -413,6 +438,7 @@ export function CatalogScreen() {
   const display = sample
     ? examples.map((item) => ({
         ...item,
+        photoUrl: null,
         person: undefined as string | undefined,
         dueDate: undefined as Date | undefined,
       }))
@@ -471,6 +497,9 @@ export function CatalogScreen() {
           const available = item.status === "AVAILABLE" && !item.borrowed;
           const content = (
             <>
+              {item.photoUrl && (
+                <EquipmentPhoto url={item.photoUrl} name={item.name} />
+              )}
               <div className="flex items-center justify-between gap-3">
                 <CategoryIcon category={item.category} />
                 <EquipmentStatus
@@ -528,6 +557,7 @@ export function CatalogScreen() {
           <Empty>Nenhum equipamento com esses filtros.</Empty>
         )}
       </div>
+      {display.some((item) => item.photoUrl) && <PhotoCredit />}
       {query.hasNextPage && (
         <Button
           onClick={() => query.fetchNextPage()}
@@ -600,9 +630,16 @@ export function DetailScreen({ patrimony }: { patrimony: string }) {
       {example && <ExampleNotice />}
       <div className="grid items-start gap-8 xl:grid-cols-[1fr_356px]">
         <div className="flex flex-col gap-6">
-          <div className="flex h-[260px] items-center justify-center rounded-xl border border-[var(--border-card)] bg-radial from-[var(--accent-800)] to-[var(--surface-sunken)]">
-            <CategoryIcon category={item.category} large />
-          </div>
+          {detail?.photoUrl ? (
+            <div className="flex flex-col gap-2">
+              <EquipmentPhoto url={detail.photoUrl} name={item.name} />
+              <PhotoCredit />
+            </div>
+          ) : (
+            <div className="flex h-[260px] items-center justify-center rounded-xl border border-[var(--border-card)] bg-radial from-[var(--accent-800)] to-[var(--surface-sunken)]">
+              <CategoryIcon category={item.category} large />
+            </div>
+          )}
           <div className="flex flex-wrap items-center gap-4">
             <h1 className="text-[28px] font-semibold tracking-[-0.01em]">
               {item.name}
@@ -1214,9 +1251,7 @@ export function RegisterScreen() {
                 {categories.map((value) => (
                   <option key={value} value={value}>
                     {categoryLabels[value]}
-                    {value === "ACCESSORY"
-                      ? " (cabos, docks, adaptadores)"
-                      : ""}
+                    {value === "ACCESSORY" ? " (docks, adaptadores)" : ""}
                   </option>
                 ))}
               </select>

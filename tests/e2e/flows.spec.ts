@@ -69,6 +69,39 @@ test("test_ca_01_login e redirecionamento de rota protegida", async ({
   await page.getByRole("button", { name: "Sair", exact: true }).first().click();
   await expect(page).toHaveURL(/\/login$/);
 });
+test("spec 002 test_ca_04 catálogo exibe foto de 800 × 600 e crédito Pexels", async ({
+  page,
+}) => {
+  await connect(page);
+  const item = await env.db.equipment.findFirstOrThrow({
+    where: { tenantId: f.tenant.id },
+  });
+  const path = `TI-0001/${"a".repeat(64)}.webp`;
+  await env.db.equipment.update({
+    where: { id: item.id },
+    data: { photoPath: path },
+  });
+  await page.route("**/storage/v1/object/public/equipamentos/**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "image/svg+xml",
+      body: '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="800" height="600" fill="navy"/></svg>',
+    }),
+  );
+  await page.goto("/catalogo");
+  const image = page.getByRole("img", { name: item.name, exact: true });
+  await expect(image).toHaveAttribute(
+    "src",
+    new RegExp(`/storage/v1/object/public/equipamentos/${path}$`),
+  );
+  await expect
+    .poll(() => image.evaluate((el) => (el as HTMLImageElement).naturalWidth))
+    .toBe(800);
+  await expect(image).toHaveAttribute("height", "600");
+  await expect(
+    page.getByRole("link", { name: "Fotos: Pexels" }),
+  ).toHaveAttribute("href", "https://www.pexels.com/");
+});
 test("test_ca_02_ca_05_ca_07_ca_08 fluxo completo persiste e exige confirmação", async ({
   page,
 }) => {
