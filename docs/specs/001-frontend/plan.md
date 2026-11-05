@@ -18,11 +18,23 @@
 5. Aplicar fallback de exemplos por tela apenas quando a consulta correspondente retornar vazia.
 6. Cobrir os critérios de aceite com testes de componente, procedimento, integração e E2E.
 
-## Dependências e riscos
+## Execução solicitada em 04/11/2026
 
-- Não há schema nem migrations no repositório. Qualquer persistência necessária exige DDL aprovado antes de gerar migration.
-- Os comandos de desenvolvimento, teste e build ainda não foram validados nesta máquina.
-- A confirmação de devolução exige um estado pendente no domínio; sua persistência depende da decisão de schema aprovada.
+O usuário solicitou conferir as atividades dos HTMLs e executar o que faltasse na cópia EmpresTI Helo/empresteti. A referência publicada é https://empresteti-hzyj.vercel.app/. Não foi solicitado publicar ou alterar o banco remoto.
+
+- Schema inicial preservado; migration 0002 adiciona solicitação de devolução, integridade de tenant, datas e exclusividade de empréstimo aberto por equipamento (CA-04/05/07/08).
+- Router valida entradas e encaminha aos Services; tenantProcedure injeta o banco filtrado e a identidade resolvida pela sessão (CA-01 a CA-11).
+- Supabase Auth somente no servidor e tokens em cookie httpOnly; associação local user/membership é necessária, sem cadastro remoto automático (CA-01/09).
+- Catálogo e Operações usam useInfiniteQuery com cursor; exemplos são identificados e nunca usados em mutações (CA-02/03/10).
+- As seis telas mantêm os tokens Nocturne e recebem estados de erro, carregamento, vazio, foco e adaptação móvel (CA-12).
+- Testcontainers recria PostgreSQL isolado e aplica todas as migrations; createCaller verifica regras e isolamento. Playwright usa o mesmo router e banco real, com apenas o provedor de identidade substituído no ambiente de teste.
+
+## Dependências externas
+
+- As URLs PostgreSQL do .env apontam para localhost:5433. A ligação TCP direta ao Supabase remoto não pode ser demonstrada sem a configuração remota correspondente.
+- O Supabase do link enviado posteriormente possui referência diferente da configuração local. Por orientação do usuário, a cópia local e a Vercel continuam sendo a fonte correta; não se troca de projeto automaticamente.
+- Login real exige conta convidada e vínculo no banco utilizado. A saúde HTTP do Auth não substitui essa prova.
+- Vercel ainda serve a versão inicial: publicar requer etapa própria, revisão e configuração remota. Nenhum push/deploy faz parte desta execução local.
 
 
 ## Restrições que este plano obedece
@@ -30,9 +42,9 @@
 - docs/adr/002-design-system.md — tokens e componentes
 
 ## Como cada parte será feita
-- <parte do plano>: skill <nome-da-skill> — atende CA-04 e CA-05
-- <outra parte>: skill <outra-skill>
-- Revisão de design antes do commit: skill <skill-de-revisao>
+- Front-end e revisão visual: skill frontend-design adaptada, respeitando os ADRs — CA-02/03/07/09/10/11/12.
+- Backend e schema: procedimentos migration, secrets e tests; a skill visual não é carregada para essas tarefas.
+- Verificação final: agents/verificador-spec.md, com spec e lista completa de arquivos alterados, sem permissão para corrigir.
 
 ## Correção do build — Prisma Client ausente
 

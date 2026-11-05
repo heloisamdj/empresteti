@@ -15,3 +15,11 @@ coverage/
 .DS_Store
 .vscode/
 .idea/
+playwright-report/
+test-results/
+*.tsbuildinfo
+.vercel/
+# Vínculos locais de descoberta; a fonte versionada fica em skills/.
+.agents/skills/
+.vercel
+.env*

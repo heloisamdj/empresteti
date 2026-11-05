@@ -1,7 +1,10 @@
 ---
 name: frontend-design
-description: Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.
+description: Construa ou revise telas e componentes visuais do EmpresTI conforme a spec e o Nocturne. Use para layout, tipografia, responsividade e estados de interface. Não use para banco de dados, autenticação, deploy ou handoff.
 license: Complete terms in LICENSE.txt
+metadata:
+  source: https://github.com/anthropics/skills/tree/main/skills/frontend-design
+  changes: Precedência das regras e ADRs, identidade Nocturne e critérios da spec preservados; description delimitada e ativação automática habilitada.
 ---
 
 # Frontend Design

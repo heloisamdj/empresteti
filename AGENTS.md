@@ -10,25 +10,29 @@ Negócio em `docs/PRD.md`. Stack decidida em `docs/adr/001-stack.md`.
 
 - `docs/PRD.md` — problema, quem usa, escopo e regras de negócio da v1. Não é spec técnica.
 - `docs/adr/` — decisões de arquitetura e stack já tomadas, com justificativa.
-- `docs/specs/<NNN-funcionalidade>/` — spec, plano e tarefas de cada feature (ainda não existe).
-- `layout.md` — especificação visual completa: cores, tipografia, espaçamento, componentes e as seis telas da v1. Design system Nocturne, somente modo escuro.
-- `rules/` — como se trabalha aqui. Leia `rules/restrictions.md` sempre (ainda não existe).
+- `docs/specs/<NNN-funcionalidade>/` — spec, plano e tarefas; a v1 está em `001-frontend/`.
+- `docs/design-system.md` — tokens; `docs/layout.md` e `layout.md` — composição das seis telas. Nocturne, somente modo escuro. Divergências históricas estão em `docs/auditoria-aulas.md`.
+- `rules/` — como se trabalha aqui. Leia `rules/restrictions.md` sempre.
+- `docs/auditoria-aulas.md` — pendências das aulas, escopo e resultados da conferência.
 
 ---
 
 ## Comandos
 
-- rodar o projeto: `<COMANDO-DEV>`
-- rodar os testes: `<COMANDO-TESTES>`
+- rodar o projeto: `npm run dev`
+- rodar os testes: `npm test` (Vitest/Testcontainers), `npm run test:e2e` (Playwright/PostgreSQL real)
+- conferir tipos: `npm run typecheck`; lint: `npm run lint`; estrutura: `npm run check:project`
+- banco local: `npm run db:up`, `npm run db:migrate`, `npm run db:seed`
 - buildar: `npm run build` (gera o Prisma Client e executa o build do Next.js)
 
-Build validado nesta máquina em 19/10/2026. Os comandos de desenvolvimento e testes ainda não foram validados.
+No Windows, encerre testes/servidores que estejam usando Prisma antes de gerar seu cliente no build. Evidências atualizadas em `docs/auditoria-aulas.md`.
 
 ---
 
 ## Ambiente
 
-- Banco: Supabase (nuvem). O desenvolvimento acontece no projeto Supabase remoto.
+- Arquitetura de produção: PostgreSQL/Supabase. Desenvolvimento e testes usam PostgreSQL local, conforme rules/restrictions.md; `.env.local` sobrescreve a conexão para a porta 5433.
+- Supabase Auth é verificado no servidor. As variáveis SUPABASE_URL/SUPABASE_ANON_KEY e os nomes públicos já existentes são aceitos; nenhuma service_role é usada pelo app cliente.
 - Deploy: Vercel, ligada ao repositório remoto. Push na branch principal publica.
 - Variáveis de ambiente: ver `.env.example`. Nunca use prefixo `NEXT_PUBLIC_` para segredos; a `service_role` key do Supabase só pode aparecer em código de servidor.
 
@@ -81,4 +85,25 @@ Se algo não estiver escrito em lugar nenhum, pergunte — não decida.
 
 ## Procedimentos
 
-_(vazio por enquanto)_
+- Sempre: `rules/restrictions.md` e `rules/operacao.md`.
+- Feature: `rules/spec-flow.md`; schema: `rules/migration.md`; configuração: `rules/secrets.md`.
+- Testes: `rules/tests.md`; antes de pronto: `rules/checks.md`; fim de tarefa: `rules/handoff.md`.
+- MCP: `.mcp.json` está vazio; não há conexão presumida. Auditoria em `docs/auditoria-skills-mcp.md`.
+
+## Subagentes
+- Ficam em agents/<nome>.md. O frontmatter diz quando delegar; o
+  corpo é a instrução completa do subagente.
+- Subagente não herda esta conversa: ao delegar, passe tudo que o
+  arquivo dele pede como entrada.
+- Se o harness não tiver subagentes, abra uma sessão nova e comece
+  com: "Aja conforme agents/<nome>.md." e as entradas pedidas.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
