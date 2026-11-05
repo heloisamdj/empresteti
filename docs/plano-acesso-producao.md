@@ -1,6 +1,6 @@
 # Acesso de produção preparado
 
-Destino autorizado pelo usuário: Supabase pkncugbogwvxyulbngjr e Vercel empresteti-hzyj. O projeto voltou a Healthy; o editor não mostrou tabelas/views no schema public. Nenhum role novo foi salvo ainda.
+Destino autorizado pelo usuário: Supabase pkncugbogwvxyulbngjr e Vercel empresteti-hzyj. O projeto voltou a Healthy e o editor não mostrou tabelas/views no schema public. O login empresti_v1 autenticou na conexão de sessão em 05/11/2026, com os grants de criação ainda pendentes.
 
 ## Credencial proposta
 

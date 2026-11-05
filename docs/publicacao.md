@@ -26,10 +26,20 @@ O ADR-001 §9 é preservado: o job migrate-production foi preparado no GitHub Ac
 
 O controle nativo do Chrome foi interrompido porque a ferramenta não conseguia verificar a URL. Na tentativa seguinte, o navegador integrado funcionou e o usuário concluiu o login. A conta heloisamdj mostrou uma organização e um projeto: EmprestimoTi, pkncugbogwvxyulbngjr, pausado e associado a heloisamdj/emprestimoTI (outro repositório, diferente do código atual). O antigo fobuhqvjheblmwbiwera não apareceu nessa conta.
 
-Após essa conferência, o usuário autorizou explicitamente reativar e integrar **pkncugbogwvxyulbngjr**, preservando o código local e o site empresteti-hzyj da Vercel. O painel confirmou a restauração e depois o estado **Healthy**. O Table Editor mostrou public sem tabelas/views. A URL/chave pública do novo projeto foram capturadas sem consultar a chave secreta, em arquivo .vercel ignorado; Auth respondeu HTTP200. As conexões/Vercel ainda precisam ser atualizadas após criar/configurar a credencial técnica, cuja confirmação foi solicitada e continua pendente.
+Após essa conferência, o usuário autorizou explicitamente reativar e integrar **pkncugbogwvxyulbngjr**, preservando o código local e o site empresteti-hzyj da Vercel. O painel confirmou a restauração e depois o estado **Healthy**. O Table Editor mostrou public sem tabelas/views. A URL e a chave pública do novo projeto foram registradas em arquivo ignorado pelo Git. Auth respondeu HTTP 200.
 
-O formulário do role empresti_v1 está preparado, ainda não salvo. O teste local descartável validou ambas as migrations e seed com LOGIN e sem superuser/CREATEDB/CREATEROLE/replicação/bypassRLS; sete tabelas com RLS. Identificou que a primeira migration precisa de CREATE no banco atual, concedido temporariamente e revogado antes do seed. O preflight de publicação recusa esse privilégio em qualquer das duas conexões enquanto não for revogado. Plano revisável em `plano-acesso-producao.md`.
+O teste local descartável validou as duas migrations e o seed com LOGIN e sem superuser, CREATEDB, CREATEROLE, replicação ou bypass de RLS. As sete tabelas ficaram com RLS. A primeira migration exige CREATE no banco atual. O plano concede esse privilégio só durante a execução inicial e exige sua revogação antes da publicação. Detalhes em `plano-acesso-producao.md`.
 
-## Próximas ações
+## Estado em 05/11/2026
 
-Conferir no projeto correto as conexões PostgreSQL, atualizar somente as configurações necessárias da Vercel, repetir o preflight, aplicar migrations pelo procedimento resolvido, verificar saúde e login real e promover a versão ao domínio principal. Skills já foram ativadas e as duas provas independentes concluídas; detalhes em auditoria-skills-mcp.md.
+O usuário autorizou o acesso técnico e o armazenamento das conexões. A leitura do painel logo após salvar foi interrompida pelo limite da revisão automática. Na retomada, os poolers de sessão e de transação confirmaram o login empresti_v1 no banco postgres do projeto autorizado. A consulta retornou CREATE falso no schema public e no banco, nenhuma relação em public e nenhum privilégio administrativo no role. O GitHub Actions recebeu os dois secrets autorizados via API, com HTTP 201 para cada um. O run 41957007293 concluiu a validação do commit 1479d23 com sucesso.
+
+Na retomada, a CLI da Vercel confirmou a autenticação de heloisamdj. O projeto empresteti-hzyj recebeu as quatro variáveis autorizadas. Cada uma permaneceu como sensitive nos ambientes Production e Preview, conforme o escopo já existente. A regra .vercelignore passou a excluir explicitamente .vercel/.
+
+O painel do Supabase havia informado sessão expirada e agora fica na tela de carregamento, inclusive na rota de entrada. As permissões do schema e as migrations remotas estão pendentes.
+
+A implantação candidata dpl_9FgLL6STXuhUnNXF8fRSVYByLeDE está READY, criada com `--prod --skip-domain`. O build abriu os dois poolers do Supabase autorizado e encontrou public vazio e as migrations 0001_init e 0002_return_request pendentes. A candidata está protegida por Vercel Authentication. O domínio público ainda não está associado a ela.
+
+## Publicação concluída
+
+O run 42012172978 aplicou 0001_init e 0002_return_request. Os dois poolers confirmaram as sete tabelas com RLS, o tenant suporte_ti e a revogação de CREATE no banco antes da promoção. A implantação dpl_9FgLL6STXuhUnNXF8fRSVYByLeDE foi promovida ao domínio principal. A rota de saúde respondeu HTTP 200 com banco conectado. O navegador redirecionou o catálogo para o login e a API recusou a consulta sem sessão com HTTP 401. O login com conta real ainda não foi exercitado. A skill frontend-design está ativa e as duas provas independentes foram concluídas. Detalhes em auditoria-skills-mcp.md.
