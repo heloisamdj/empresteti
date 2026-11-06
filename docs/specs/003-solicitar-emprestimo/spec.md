@@ -2,6 +2,8 @@
 
 Status: aprovada pela estudante para implementação local.
 
+A regra abaixo descreve a versão da tag `entrega-pratica`. A revisão pós-entrega detalha o calendário de novos empréstimos na [spec 004](../004-calendario-devolucao/spec.md).
+
 ## Decisões da prática
 
 - O pedido de item disponível cria o empréstimo imediatamente. O catálogo passa a exibi-lo como emprestado. Aprovação, fila e reserva ficam fora do fluxo.

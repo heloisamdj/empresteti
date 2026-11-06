@@ -11,6 +11,7 @@ Preparar 12 equipamentos fotografados no tenant `suporte_ti` e a conta do profes
 - A lista literal da atividade está em `skills/imagens-equipamentos/assets/equipamentos.json`. O TI-0004, TI-0007 e TI-0010 ficam em manutenção e os outros nove começam disponíveis. A estudante confirmou seguir a lista diante da divergência com o briefing.
 - Cada foto vem da API do Pixabay conforme a atualização comunicada pela estudante. O recorte usa o Playwright existente e a revisão humana impede fotos com pessoas, marcas, logos, texto ou telas com conteúdo. A página que mostra as fotos inclui o crédito com link.
 - O patrimônio é único no tenant. Uma repetição com os mesmos dados mantém o estado e o histórico. Em conflito com um cadastro existente, a carga informa a diferença e para.
+- Cada objeto do Storage usa o caminho `<patrimonio>/<sha256>.webp`. A combinação vincula a imagem ao equipamento e permite reaproveitar um arquivo idêntico na repetição da carga.
 - A categoria Cabo é adicionada ao cadastro. A categoria Acessório permanece para registros existentes e itens de outras classes.
 - O professor tem perfil colaborador no tenant e zero empréstimos. O operador provisiona e confirma a identidade no Supabase Auth e vincula o UID correspondente. A senha padrão da turma é configurada fora do Git. Os testes usam outra conta.
 - Cadastro pela interface, importação da planilha e redesenho do catálogo ficam fora desta spec. Os componentes existentes recebem o campo de foto e o crédito. Itens antigos sem foto mantêm sua apresentação atual.

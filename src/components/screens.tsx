@@ -810,6 +810,11 @@ export function MyLoansScreen() {
       <div className="flex flex-col gap-3">
         {open.map((loan) => {
           const late = loan.dueDate < data.serverNow;
+          const duration = Math.max(
+            1,
+            loan.dueDate.getTime() - loan.borrowedAt.getTime(),
+          );
+          const elapsed = data.serverNow.getTime() - loan.borrowedAt.getTime();
           return (
             <article
               key={loan.id}
@@ -835,15 +840,8 @@ export function MyLoansScreen() {
                 </span>
                 <progress
                   aria-label="Prazo decorrido"
-                  max={14}
-                  value={Math.max(
-                    0,
-                    Math.min(
-                      14,
-                      (data.serverNow.getTime() - loan.borrowedAt.getTime()) /
-                        86400000,
-                    ),
-                  )}
+                  max={duration}
+                  value={Math.max(0, Math.min(duration, elapsed))}
                   className="h-1 w-full overflow-hidden rounded-full accent-[var(--accent-500)] [&::-webkit-progress-value]:transition-[width] [&::-webkit-progress-value]:duration-[240ms]"
                 />
                 <StatusPill

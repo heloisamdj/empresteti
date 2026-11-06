@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { fixtures, startDatabase } from "../helpers/database";
 import { appRouter } from "../../src/server/api/root";
@@ -315,6 +315,53 @@ describe("Critérios da spec 001 em PostgreSQL real", () => {
     expect(
       (await crossTenant.loans.mine()).openItems.map(({ id }) => id),
     ).toEqual([crossTenantLoan.id]);
+  });
+  it("spec 004 test_ca_03 previsão e gravação usam o calendário e preservam o vencimento anterior", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      vi.setSystemTime(new Date("2026-11-05T15:00:00Z"));
+      const legacyEquipment = await env.db.equipment.create({
+        data: {
+          tenantId: f.tenant.id,
+          name: "Monitor de empréstimo anterior",
+          patrimony: "PAT-ANTERIOR",
+          category: "MONITOR",
+        },
+      });
+      const legacyDueDate = new Date("2026-11-25T02:59:59.999Z");
+      const legacyLoan = await env.db.loan.create({
+        data: {
+          tenantId: f.tenant.id,
+          userId: f.user.id,
+          equipmentId: legacyEquipment.id,
+          borrowedAt: new Date("2026-11-04T15:00:00Z"),
+          dueDate: legacyDueDate,
+        },
+      });
+
+      const expectedDueDate = new Date("2026-11-27T02:59:59.999Z");
+      expect((await f.caller.loans.mine()).expectedDueDate).toEqual(
+        expectedDueDate,
+      );
+      const loan = await f.caller.loans.request({ id: f.equipment.id });
+      expect(loan.dueDate).toEqual(expectedDueDate);
+      expect(
+        (await env.db.loan.findUniqueOrThrow({ where: { id: loan.id } })).dueDate,
+      ).toEqual(expectedDueDate);
+
+      vi.setSystemTime(legacyDueDate);
+      const atDeadline = await f.caller.loans.mine();
+      expect(atDeadline.openItems).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: legacyLoan.id, dueDate: legacyDueDate }),
+        ]),
+      );
+      expect(atDeadline.overdue).toBe(false);
+      vi.setSystemTime(new Date(legacyDueDate.getTime() + 1));
+      expect((await f.caller.loans.mine()).overdue).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
   it("spec 003 test_ca_04_manutencao nunca fica disponível e fora de uso sai do catálogo", async () => {
     await env.db.equipment.update({

@@ -289,7 +289,7 @@ Backdrop `rgba(4,6,14,0.68)` cobrindo a tela, conteúdo centralizado. Caixa: 432
 ### 5.10 Indicadores de limite
 
 - Segmentos de 3 (limite de itens): três divs `flex:1; height:5px; border-radius:99px`, `gap:5px`; preenchidos `#5B7FE0`, vazios `#222C4A`.
-- Barra de prazo: trilha `height:4px; background:#222C4A; border-radius:99px; overflow:hidden`; preenchimento `#5B7FE0` na proporção de dias decorridos / 14.
+- Barra de prazo: trilha `height:4px; background:#222C4A; border-radius:99px; overflow:hidden`; preenchimento `#5B7FE0` na proporção do tempo decorrido entre a retirada e o vencimento gravado.
 
 ### 5.11 Ícones
 

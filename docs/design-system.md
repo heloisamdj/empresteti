@@ -375,8 +375,8 @@ Regras: nunca animar `box-shadow` de moldura; nada acima de 240ms; respeitar `@m
 
 ## 10. Regras de negócio visíveis na interface
 
-1. **Máximo de 3 itens por pessoa** — contador no header ("2 de 3 itens com você"), segmentos de limite no Detalhe e em Meus empréstimos, aviso no diálogo quando a solicitação leva ao terceiro item.
-2. **Prazo padrão de 14 dias** — data calculada no card de solicitação ("Devolver até 14/set"), barra de progresso por item, coluna "Prazo" em Operações.
+1. **Máximo de cinco itens por pessoa na prática SDD** — contador no header ("2 de 5 itens com você"), segmentos no Detalhe e em Meus empréstimos, e contagem no diálogo de solicitação.
+2. **Prazo de 14 dias úteis na prática SDD** — data calculada no card de solicitação ("Devolver até 14/set"), barra de progresso por item e coluna "Prazo" em Operações. A [spec 003](specs/003-solicitar-emprestimo/spec.md) descreve a regra da versão entregue.
 3. **Atraso bloqueia novo empréstimo** — linha tingida em vermelho suave, card de estatística "Em atraso" com borda vermelha, botão "Solicitar" desabilitado (`opacity:.45`) com nota explicativa.
 4. **Manutenção não fica disponível** — pill âmbar, card sem ação, e nota no controle "Situação inicial" do cadastro.
 5. **Fora de uso sai do catálogo** — item fora de circulação: não aparece em nenhuma listagem nem vira pedido de empréstimo.

@@ -1,5 +1,7 @@
 # EmpresTI — Especificação de Layout (para reprodução por agente de IA)
 
+Os exemplos de três itens e prazo de 14 dias abaixo são históricos. A referência de layout é [docs/layout.md](docs/layout.md) e a regra da prática está na [spec 003](docs/specs/003-solicitar-emprestimo/spec.md).
+
 Documento de referência do front-end do EmpresTI (empréstimo de equipamentos internos).
 Base visual: design system **Nocturne** adaptado à primária `#001449`.
 **Somente modo escuro.** Não existe modo claro, nem alternador de tema.
