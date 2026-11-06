@@ -2,10 +2,11 @@
 
 ## Revisão pós-entrega
 
-- Branch local `revisao/pos-entrega`, criada do merge `ad2626b`. A `main`, a tag `entrega-pratica` e a Vercel já servem a entrega com os checks verdes. O diff local corrige documentação e a barra de prazo. Sem migration nem alteração de dados.
-- Verificação local do diff: check:project, lint, tipos, 21 testes Vitest, build, 12 testes Playwright e git diff --check passaram. O lint manteve um aviso antigo em docs/app.js.
-- A estudante aprovou a spec 004 e o plano. O diff local aplica aos novos empréstimos os feriados nacionais, estaduais e municipais de São Paulo capital, com preservação dos prazos gravados. O histórico da conta do professor, a ordem real dos trabalhos e a limitação de proteção da main estão registrados no `ENTREGA.md`.
-- Confira os checks da spec 004 e o parecer independente antes de preparar a integração.
+- Branch `revisao-pos-entrega`, baseada no merge `ad2626b`. A tag `entrega-pratica` registra a entrega original. A revisão posterior corrige documentação, calendário e barra de prazo, sem migration nem alteração de dados.
+- Verificação local da revisão: check:project, lint, tipos, 25 testes Vitest, build, 12 testes Playwright e git diff --check passaram. O lint manteve um aviso antigo em docs/app.js.
+- A estudante aprovou a spec 004 e o plano. A regra de novos empréstimos exclui os feriados nacionais, estaduais e municipais de São Paulo capital e preserva os prazos gravados. As ressalvas históricas e a limitação de proteção da main constam no `ENTREGA.md`.
+- A primeira rodada do verificador pediu um teste de fuso que diferenciasse UTC de São Paulo, a asserção de data no diálogo e cobertura do progresso de duração zero. O commit 9396c89 corrige esses pontos e tem os três CAs aprovados em docs/specs/004-calendario-devolucao/verificacao.md.
+- A responsável autorizou o envio da branch. Confira o CI e prepare o PR para a integração pela responsável conforme rules/operacao.md.
 
 1. A primeira validação em produção usou o deploy dpl_ACVkuZAwg78M4gDueceHpSJ47quY, commit d4e95c5 da branch pratica/sdd-subagentes, enquanto o PR #3 estava em rascunho.
 2. Enunciado: pratica-sdd-subagentes.html. A estudante aprovou as specs 002 e 003, cinco empréstimos, 14 dias úteis em São Paulo e TI-0004/TI-0007/TI-0010 em manutenção.
