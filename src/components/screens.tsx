@@ -18,6 +18,7 @@ import {
   MAX_ITEMS,
 } from "@/lib/contracts";
 import { examples, categoryIcon } from "@/lib/examples";
+import { loanProgress } from "@/lib/loan-progress";
 import {
   Button,
   Dialog,
@@ -835,14 +836,11 @@ export function MyLoansScreen() {
                 </span>
                 <progress
                   aria-label="Prazo decorrido"
-                  max={14}
-                  value={Math.max(
-                    0,
-                    Math.min(
-                      14,
-                      (data.serverNow.getTime() - loan.borrowedAt.getTime()) /
-                        86400000,
-                    ),
+                  max={1}
+                  value={loanProgress(
+                    loan.borrowedAt,
+                    loan.dueDate,
+                    data.serverNow,
                   )}
                   className="h-1 w-full overflow-hidden rounded-full accent-[var(--accent-500)] [&::-webkit-progress-value]:transition-[width] [&::-webkit-progress-value]:duration-[240ms]"
                 />

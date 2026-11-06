@@ -157,7 +157,7 @@ test("spec 003 test_ca_03 sexto empréstimo fica indisponível com motivo visív
   await expect(page.getByText(/Limite de 5 itens atingido/)).toBeVisible();
   expect((await f.caller.loans.mine()).openCount).toBe(5);
 });
-test("test_ca_02_ca_05_ca_07_ca_08 fluxo completo persiste e exige confirmação", async ({
+test("spec 004 test_ca_03 e test_ca_02_ca_05_ca_07_ca_08 fluxo completo persiste e exige confirmação", async ({
   page,
 }) => {
   await connect(page);
@@ -169,7 +169,10 @@ test("test_ca_02_ca_05_ca_07_ca_08 fluxo completo persiste e exige confirmação
   await page
     .getByRole("button", { name: "Solicitar empréstimo", exact: true })
     .click();
-  await expect(page.getByRole("dialog")).toContainText("14 dias úteis");
+  const { expectedDueDate } = await f.caller.loans.mine();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toContainText("14 dias úteis");
+  await expect(dialog).toContainText(formatDate(expectedDueDate));
   expect(
     await page
       .getByRole("dialog")
@@ -184,6 +187,7 @@ test("test_ca_02_ca_05_ca_07_ca_08 fluxo completo persiste e exige confirmação
   const created = await env.db.loan.findFirstOrThrow({
     where: { userId: f.user.id },
   });
+  expect(created.dueDate).toEqual(expectedDueDate);
   await expect(
     page.getByText(formatDate(created.dueDate), { exact: false }).first(),
   ).toBeVisible();
@@ -199,7 +203,34 @@ test("test_ca_02_ca_05_ca_07_ca_08 fluxo completo persiste e exige confirmação
   await expect(
     page.getByRole("button", { name: "Solicitar empréstimo", exact: true }),
   ).toBeDisabled();
+  const day = 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  await env.db.loan.update({
+    where: { id: created.id },
+    data: {
+      borrowedAt: new Date(now - 15 * day),
+      dueDate: new Date(now + 5 * day),
+    },
+  });
   await page.goto("/meus-emprestimos");
+  const progress = page.getByRole("progressbar", { name: "Prazo decorrido" });
+  await expect(progress).toBeVisible();
+  expect(
+    await progress.evaluate(
+      (element) => (element as HTMLProgressElement).position,
+    ),
+  ).toBeCloseTo(0.75, 2);
+  await env.db.loan.update({
+    where: { id: created.id },
+    data: { dueDate: new Date(now - day) },
+  });
+  await page.reload();
+  await expect(progress).toBeVisible();
+  expect(
+    await progress.evaluate(
+      (element) => (element as HTMLProgressElement).position,
+    ),
+  ).toBe(1);
   await page.getByRole("button", { name: "Solicitar devolução" }).click();
   await expect(
     page.getByText("Aguardando Operações", { exact: true }),

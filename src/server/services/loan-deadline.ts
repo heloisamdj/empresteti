@@ -1,4 +1,5 @@
 import { LOAN_DAYS } from "@/lib/contracts";
+import { saoPauloHolidays } from "./sao-paulo-holidays";
 
 const timeZone = "America/Sao_Paulo";
 const civilDate = new Intl.DateTimeFormat("en-CA", {
@@ -30,10 +31,17 @@ export function loanDeadline(borrowedAt: Date) {
     Number(parts.find((entry) => entry.type === name)?.value);
   // A data UTC intermediária representa só o calendário civil de São Paulo.
   const date = new Date(Date.UTC(part("year"), part("month") - 1, part("day")));
+  let year = date.getUTCFullYear();
+  let holidays = saoPauloHolidays(year);
   for (let remaining = LOAN_DAYS; remaining > 0;) {
     date.setUTCDate(date.getUTCDate() + 1);
+    if (date.getUTCFullYear() !== year) {
+      year = date.getUTCFullYear();
+      holidays = saoPauloHolidays(year);
+    }
     const weekday = date.getUTCDay();
-    if (weekday >= 1 && weekday <= 5) remaining--;
+    if (weekday >= 1 && weekday <= 5 && !holidays.has(date.getTime()))
+      remaining--;
   }
   date.setUTCDate(date.getUTCDate() + 1);
   const midnight = date.getTime();

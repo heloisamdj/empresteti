@@ -9,6 +9,8 @@ Negócio em `docs/PRD.md`. Stack decidida em `docs/adr/001-stack.md`.
 ## Onde olhar
 
 - `docs/PRD.md` — problema, quem usa, escopo e regras de negócio da v1. Não é spec técnica.
+- `docs/specs/003-solicitar-emprestimo/spec.md` — regra entregue na prática SDD. O limite de três do PRD histórico foi substituído por cinco neste fluxo.
+- `docs/specs/004-calendario-devolucao/spec.md` — calendário da revisão pós-entrega para o prazo de novos empréstimos.
 - `docs/adr/` — decisões de arquitetura e stack já tomadas, com justificativa.
 - `docs/specs/<NNN-funcionalidade>/` — spec, plano e tarefas; a v1 está em `001-frontend/`.
 - `docs/design-system.md` — tokens; `docs/layout.md` e `layout.md` — composição das seis telas. Nocturne, somente modo escuro. Divergências históricas estão em `docs/auditoria-aulas.md`.

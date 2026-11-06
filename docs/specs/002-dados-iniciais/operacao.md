@@ -63,8 +63,9 @@ raiz do bucket, com zero bytes. É o marcador de pasta usado pelo painel.
 1. Com a migration e a carga verificadas, o responsável usa uma cópia limpa do
    commit candidato e cria uma implantação no projeto Vercel correto com
    `vercel deploy --prod --skip-domain`. Registre o SHA e o ID da implantação.
-   Confira na candidata a conexão, os 12 cards com foto e crédito e o acesso da
-   conta do professor. Em seguida, o responsável promove a candidata com
+   Confira na candidata a conexão e os 12 cards com foto e crédito usando
+   uma conta de teste. A conta de correção fica reservada ao professor.
+   Em seguida, o responsável promove a candidata com
    `vercel promote <id-da-implantação>`. Isso permite colher evidência no
    domínio público antes de integrar o PR.
 
@@ -75,6 +76,7 @@ raiz do bucket, com zero bytes. É o marcador de pasta usado pelo painel.
    [Implantação candidata](https://vercel.com/helo-98ee/empresteti-hzyj/ACVkuZAwg78M4gDueceHpSJ47quY)
 
 2. Confirme primeiro os dados no domínio público. Depois, com conta separada,
+   confira que um item em manutenção não oferece ação de solicitação e
    valide o empréstimo imediato, o filtro de disponibilidade, o prazo em
    Meus empréstimos e a recusa do sexto pedido. Confirme novamente zero
    empréstimos na conta do professor.
