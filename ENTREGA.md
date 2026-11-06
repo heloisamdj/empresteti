@@ -1,12 +1,12 @@
 # Entrega da prática SDD
 
-**Estado: prática publicada e fluxo de empréstimo conferido. O acesso à conta do professor foi confirmado pela responsável e aguarda nova revisão da spec 002.**
+**Estado: prática publicada e duas specs aprovadas pelo verificador.**
 
 ## Links
 
 - [Repositório EmpresTI](https://github.com/heloisamdj/empresteti), monolito Next.js com tRPC. A prática está na branch `pratica/sdd-subagentes` e no [PR #3](https://github.com/heloisamdj/empresteti/pull/3).
 - [Produção na Vercel](https://empresteti-hzyj.vercel.app/). A prática foi promovida a partir do commit `d4e95c5`. A rota de saúde confirmou banco conectado.
-- Tag `entrega-pratica`: pendente de publicação e conferência.
+- [Tag de entrega](https://github.com/heloisamdj/empresteti/tree/entrega-pratica), criada após conferir o CI e integrar o PR.
 
 ## 1. Conflitos
 
@@ -71,6 +71,8 @@ Na rodada `2f4b44f`, o verificador aprovou os critérios locais de empréstimo C
 | 003 CA-01 | Faltavam asserções de nome, categoria e situação dos 12 cards no navegador. | Asserções acrescentadas ao cenário do catálogo. [Teste](tests/e2e/flows.spec.ts#L74) · `2d53297` |
 
 Na revisão `27598f8`, o job `validate` passou com os testes e a build. O verificador aprovou os seis critérios da spec 003. Na spec 002, registrou quatro critérios atendidos e manteve o CA-05 pendente de evidência do login. Depois dessa rodada, a responsável informou que ela própria conferiu o login do professor. O enunciado reserva essa conta ao professor. A demonstração de empréstimos usou a conta separada, e o professor segue com zero empréstimos. [Execução do CI](https://github.com/heloisamdj/empresteti/actions/runs/42215078089) · [Operação](docs/specs/002-dados-iniciais/operacao.md)
+
+Na revisão `f747a90`, o verificador aprovou os cinco critérios da spec 002 e os seis da spec 003. O job `validate` passou com a mesma revisão. [Execução do CI](https://github.com/heloisamdj/empresteti/actions/runs/42216141846) · [Parecer 002](docs/specs/002-dados-iniciais/verificacao.md) · [Parecer 003](docs/specs/003-solicitar-emprestimo/verificacao.md)
 
 ## 7. Regra posta à prova
 
