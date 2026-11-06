@@ -5,6 +5,7 @@ export const categories = [
   "MONITOR",
   "CAMERA",
   "ACCESSORY",
+  "CABLE",
   "PROJECTOR",
 ] as const;
 export const categoryLabels: Record<(typeof categories)[number], string> = {
@@ -12,6 +13,7 @@ export const categoryLabels: Record<(typeof categories)[number], string> = {
   MONITOR: "Monitor",
   CAMERA: "Câmera",
   ACCESSORY: "Acessório",
+  CABLE: "Cabo",
   PROJECTOR: "Projetor",
 };
 export const loginInput = z
@@ -72,7 +74,7 @@ export const paginationInput = z
   })
   .strict()
   .default({ limit: 20 });
-export const MAX_ITEMS = 3;
+export const MAX_ITEMS = 5;
 export const LOAN_DAYS = 14;
 export function formatDate(value: Date | string) {
   const parts = new Intl.DateTimeFormat("pt-BR", {

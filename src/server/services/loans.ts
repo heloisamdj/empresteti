@@ -3,12 +3,8 @@ import { TRPCError } from "@trpc/server";
 import type { z } from "zod";
 import type { TenantDb } from "../db";
 import type { Identity } from "../auth";
-import {
-  LOAN_DAYS,
-  MAX_ITEMS,
-  operationsInput,
-  paginationInput,
-} from "@/lib/contracts";
+import { MAX_ITEMS, operationsInput, paginationInput } from "@/lib/contracts";
+import { loanDeadline } from "./loan-deadline";
 
 export async function myLoans(
   db: TenantDb,
@@ -38,7 +34,7 @@ export async function myLoans(
     overdue: open.some((item) => item.dueDate < serverNow),
     maxItems: MAX_ITEMS,
     serverNow,
-    expectedDueDate: new Date(serverNow.getTime() + LOAN_DAYS * 86400000),
+    expectedDueDate: loanDeadline(serverNow),
   };
 }
 export async function requestLoan(
@@ -68,7 +64,7 @@ export async function requestLoan(
       if (open.length >= MAX_ITEMS)
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Limite de 3 itens atingido.",
+          message: `Limite de ${MAX_ITEMS} itens atingido.`,
         });
       const now = new Date();
       if (open.some((loan) => loan.dueDate < now))
@@ -87,7 +83,7 @@ export async function requestLoan(
           userId: identity.id,
           equipmentId,
           borrowedAt: now,
-          dueDate: new Date(now.getTime() + LOAN_DAYS * 86400000),
+          dueDate: loanDeadline(now),
         },
       });
       await tx.auditLog.create({

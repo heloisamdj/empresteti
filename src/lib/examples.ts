@@ -54,5 +54,6 @@ export const categoryIcon: Record<string, string> = {
   MONITOR: "monitor",
   CAMERA: "video-camera",
   ACCESSORY: "usb",
+  CABLE: "usb",
   PROJECTOR: "projector-screen",
 };

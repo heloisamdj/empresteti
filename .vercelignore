@@ -1,5 +1,6 @@
 .env*
 .vercel/
+.equipamentos-fotos/
 .git/
 .agents/
 .codex/

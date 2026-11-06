@@ -4,6 +4,7 @@ import type { z } from "zod";
 import type { TenantDb } from "../db";
 import { equipmentInput, listInput, patrimonyInput } from "@/lib/contracts";
 import type { Identity } from "../auth";
+import { equipmentPhotoUrl } from "../equipment-photos";
 
 export async function listEquipment(
   db: TenantDb,
@@ -50,7 +51,10 @@ export async function listEquipment(
   const more = rows.length > input.limit;
   if (more) rows.pop();
   return {
-    items: rows,
+    items: rows.map((item) => ({
+      ...item,
+      photoUrl: equipmentPhotoUrl(item.photoPath),
+    })),
     total,
     availableCount,
     nextCursor: more ? rows.at(-1)?.id : undefined,
@@ -83,6 +87,7 @@ export async function equipmentDetail(
   });
   return {
     ...item,
+    photoUrl: equipmentPhotoUrl(item.photoPath),
     activeLoan,
     nextCursor: more ? item.loans.at(-1)?.id : undefined,
   };

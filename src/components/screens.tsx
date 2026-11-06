@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -13,6 +14,8 @@ import {
   equipmentInput,
   formatDate,
   loginInput,
+  LOAN_DAYS,
+  MAX_ITEMS,
 } from "@/lib/contracts";
 import { examples, categoryIcon } from "@/lib/examples";
 import {
@@ -30,6 +33,30 @@ import {
 } from "./ui";
 
 type Category = (typeof categories)[number];
+function PhotoCredit() {
+  return (
+    <a
+      href="https://pixabay.com/"
+      className="w-fit text-xs text-[var(--accent-400)] underline underline-offset-2"
+    >
+      Fotos: Pixabay
+    </a>
+  );
+}
+
+function EquipmentPhoto({ url, name }: { url: string; name: string }) {
+  return (
+    <Image
+      unoptimized
+      src={url}
+      alt={name}
+      width={800}
+      height={600}
+      className="aspect-[4/3] h-auto w-full rounded-lg object-cover"
+    />
+  );
+}
+
 function RuleNotice() {
   return (
     <Notice className="bg-[linear-gradient(90deg,#0E1530,#0B1128)] px-4 py-[13px] text-[12.5px] text-[var(--text-secondary)] [&>i]:text-[var(--accent-400)]">
@@ -37,8 +64,8 @@ function RuleNotice() {
         Equipamento certo, na hora certa.
       </p>
       <p>
-        Até 3 itens por pessoa · prazo de 14 dias · atraso bloqueia novos
-        pedidos · manutenção indisponível para empréstimo.
+        Até {MAX_ITEMS} itens por pessoa · prazo de {LOAN_DAYS} dias úteis ·
+        atraso bloqueia novos pedidos · manutenção indisponível para empréstimo.
       </p>
     </Notice>
   );
@@ -90,10 +117,10 @@ function Limit({ count }: { count: number }) {
   return (
     <div className="flex flex-col gap-2">
       <p className="text-xs text-[var(--text-muted)]">
-        {count} de 3 itens com você
+        {count} de {MAX_ITEMS} itens com você
       </p>
       <div className="flex gap-[5px]" aria-hidden="true">
-        {[0, 1, 2].map((i) => (
+        {Array.from({ length: MAX_ITEMS }, (_, i) => (
           <span
             key={i}
             className={cn(
@@ -319,13 +346,13 @@ export function LoginScreen() {
           <div className="h-px bg-gradient-to-r from-[var(--accent-600)] to-transparent" />
           <div className="flex gap-10">
             <div>
-              <p className="text-2xl font-semibold">3 itens</p>
+              <p className="text-2xl font-semibold">{MAX_ITEMS} itens</p>
               <p className="pt-1 text-xs text-[var(--text-muted)]">
                 por pessoa
               </p>
             </div>
             <div>
-              <p className="text-2xl font-semibold">14 dias</p>
+              <p className="text-2xl font-semibold">{LOAN_DAYS} dias úteis</p>
               <p className="pt-1 text-xs text-[var(--text-muted)]">
                 de prazo padrão
               </p>
@@ -413,6 +440,7 @@ export function CatalogScreen() {
   const display = sample
     ? examples.map((item) => ({
         ...item,
+        photoUrl: null,
         person: undefined as string | undefined,
         dueDate: undefined as Date | undefined,
       }))
@@ -471,6 +499,9 @@ export function CatalogScreen() {
           const available = item.status === "AVAILABLE" && !item.borrowed;
           const content = (
             <>
+              {item.photoUrl && (
+                <EquipmentPhoto url={item.photoUrl} name={item.name} />
+              )}
               <div className="flex items-center justify-between gap-3">
                 <CategoryIcon category={item.category} />
                 <EquipmentStatus
@@ -528,6 +559,7 @@ export function CatalogScreen() {
           <Empty>Nenhum equipamento com esses filtros.</Empty>
         )}
       </div>
+      {display.some((item) => item.photoUrl) && <PhotoCredit />}
       {query.hasNextPage && (
         <Button
           onClick={() => query.fetchNextPage()}
@@ -574,7 +606,7 @@ export function DetailScreen({ patrimony }: { patrimony: string }) {
   const count = mine.data.openCount;
   const blocked =
     !!example ||
-    count >= 3 ||
+    count >= MAX_ITEMS ||
     mine.data.overdue ||
     item.status !== "AVAILABLE" ||
     !!active;
@@ -582,8 +614,8 @@ export function DetailScreen({ patrimony }: { patrimony: string }) {
     ? "Cadastre um equipamento real para solicitar um empréstimo."
     : mine.data.overdue
       ? "Você tem item em atraso. Regularize a devolução para solicitar outro."
-      : count >= 3
-        ? "Limite de 3 itens atingido. Devolva um item antes de solicitar outro."
+      : count >= MAX_ITEMS
+        ? `Limite de ${MAX_ITEMS} itens atingido. Devolva um item antes de solicitar outro.`
         : item.status !== "AVAILABLE" || active
           ? "Este equipamento não está disponível."
           : "Retirada no local indicado. A devolução será confirmada por Operações.";
@@ -600,9 +632,16 @@ export function DetailScreen({ patrimony }: { patrimony: string }) {
       {example && <ExampleNotice />}
       <div className="grid items-start gap-8 xl:grid-cols-[1fr_356px]">
         <div className="flex flex-col gap-6">
-          <div className="flex h-[260px] items-center justify-center rounded-xl border border-[var(--border-card)] bg-radial from-[var(--accent-800)] to-[var(--surface-sunken)]">
-            <CategoryIcon category={item.category} large />
-          </div>
+          {detail?.photoUrl ? (
+            <div className="flex flex-col gap-2">
+              <EquipmentPhoto url={detail.photoUrl} name={item.name} />
+              <PhotoCredit />
+            </div>
+          ) : (
+            <div className="flex h-[260px] items-center justify-center rounded-xl border border-[var(--border-card)] bg-radial from-[var(--accent-800)] to-[var(--surface-sunken)]">
+              <CategoryIcon category={item.category} large />
+            </div>
+          )}
           <div className="flex flex-wrap items-center gap-4">
             <h1 className="text-[28px] font-semibold tracking-[-0.01em]">
               {item.name}
@@ -679,7 +718,7 @@ export function DetailScreen({ patrimony }: { patrimony: string }) {
               </div>
               <div className="flex justify-between">
                 <dt className="text-[var(--text-muted)]">Prazo padrão</dt>
-                <dd>14 dias</dd>
+                <dd>{LOAN_DAYS} dias úteis</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-[var(--text-muted)]">Devolver até</dt>
@@ -711,11 +750,11 @@ export function DetailScreen({ patrimony }: { patrimony: string }) {
         open={open}
         onOpenChange={setOpen}
         title="Confirmar empréstimo"
-        description={`Solicitar ${item.name} (${item.patrimony}), com prazo de 14 dias e devolução prevista para ${formatDate(due)}?`}
+        description={`Solicitar ${item.name} (${item.patrimony}), com prazo de ${LOAN_DAYS} dias úteis e devolução prevista para ${formatDate(due)}?`}
       >
         <Notice>
-          Você passará a ter {count + 1} de 3 itens. O prazo definitivo será
-          calculado pelo servidor na confirmação.
+          Você passará a ter {count + 1} de {MAX_ITEMS} itens. O prazo
+          definitivo será calculado pelo servidor na confirmação.
         </Notice>
         <Button
           variant="confirmation"
@@ -751,7 +790,7 @@ export function MyLoansScreen() {
     >
       <ScreenTitle
         title="Comigo agora"
-        description={`${data.openCount} de 3 itens · ${data.overdue ? "há item em atraso" : "nenhum em atraso"}`}
+        description={`${data.openCount} de ${MAX_ITEMS} itens · ${data.overdue ? "há item em atraso" : "nenhum em atraso"}`}
         action={
           <Button asChild>
             <Link href="/catalogo">Pegar emprestado</Link>
@@ -1214,9 +1253,7 @@ export function RegisterScreen() {
                 {categories.map((value) => (
                   <option key={value} value={value}>
                     {categoryLabels[value]}
-                    {value === "ACCESSORY"
-                      ? " (cabos, docks, adaptadores)"
-                      : ""}
+                    {value === "ACCESSORY" ? " (docks, adaptadores)" : ""}
                   </option>
                 ))}
               </select>

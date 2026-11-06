@@ -3,6 +3,8 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { fixtures, startDatabase } from "../helpers/database";
 import { appRouter } from "../../src/server/api/root";
 import type { Context } from "../../src/server/api/trpc";
+import inventory from "../../skills/imagens-equipamentos/assets/equipamentos.json";
+import { categoryLabels, formatDate } from "../../src/lib/contracts";
 
 let env: Awaited<ReturnType<typeof startDatabase>>;
 let f: Awaited<ReturnType<typeof fixtures>>;
@@ -69,6 +71,92 @@ test("test_ca_01_login e redirecionamento de rota protegida", async ({
   await page.getByRole("button", { name: "Sair", exact: true }).first().click();
   await expect(page).toHaveURL(/\/login$/);
 });
+test("spec 002 test_ca_04 e spec 003 test_ca_01_ca_04 catálogo exibe fotos e crédito Pixabay", async ({
+  page,
+}) => {
+  await connect(page);
+  const category = {
+    notebook: "NOTEBOOK",
+    monitor: "MONITOR",
+    cabo: "CABLE",
+    camera: "CAMERA",
+  } as const;
+  await env.db.equipment.delete({ where: { id: f.equipment.id } });
+  await env.db.equipment.createMany({
+    data: inventory.map((item, index) => ({
+      tenantId: f.tenant.id,
+      name: item.nome,
+      category: category[item.categoria as keyof typeof category],
+      patrimony: item.patrimonio,
+      status: item.situacao === "manutencao" ? "MAINTENANCE" : "AVAILABLE",
+      photoPath: `${item.patrimonio}/${(index + 1).toString(16).padStart(64, "0")}.webp`,
+    })),
+  });
+  const path = `TI-0001/${"1".padStart(64, "0")}.webp`;
+  await page.route("**/storage/v1/object/public/equipamentos/**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "image/svg+xml",
+      body: '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="800" height="600" fill="navy"/></svg>',
+    }),
+  );
+  await page.goto("/catalogo");
+  await expect(
+    page.getByText("12 equipamentos · 9 disponíveis agora"),
+  ).toBeVisible();
+  await expect(page.locator("img[src*='/equipamentos/TI-']")).toHaveCount(12);
+  for (const item of inventory) {
+    const photo = page.locator(`img[src*="/equipamentos/${item.patrimonio}/"]`);
+    const maintenance = item.situacao === "manutencao";
+    const card = page
+      .getByRole(maintenance ? "article" : "link")
+      .filter({ has: photo });
+    await expect(
+      card.getByRole("heading", { name: item.nome, exact: true }),
+    ).toBeVisible();
+    await expect(card).toContainText(
+      categoryLabels[category[item.categoria as keyof typeof category]],
+    );
+    await expect(card).toContainText(
+      maintenance ? "Em manutenção" : "Disponível",
+    );
+  }
+  await expect(page.locator('a[href="/catalogo/TI-0010"]')).toHaveCount(0);
+  const image = page.getByRole("img", { name: inventory[0].nome, exact: true });
+  await expect(image).toHaveAttribute(
+    "src",
+    new RegExp(`/storage/v1/object/public/equipamentos/${path}$`),
+  );
+  await expect
+    .poll(() => image.evaluate((el) => (el as HTMLImageElement).naturalWidth))
+    .toBe(800);
+  await expect(image).toHaveAttribute("height", "600");
+  await expect(
+    page.getByRole("link", { name: "Fotos: Pixabay" }),
+  ).toHaveAttribute("href", "https://pixabay.com/");
+});
+test("spec 003 test_ca_03 sexto empréstimo fica indisponível com motivo visível", async ({
+  page,
+}) => {
+  await connect(page);
+  for (let index = 1; index <= 5; index++) {
+    const item = await env.db.equipment.create({
+      data: {
+        tenantId: f.tenant.id,
+        name: `Item ${index}`,
+        patrimony: `PAT-LIM-${index}`,
+        category: "MONITOR",
+      },
+    });
+    await f.caller.loans.request({ id: item.id });
+  }
+  await page.goto(`/catalogo/${f.equipment.patrimony}`);
+  await expect(
+    page.getByRole("button", { name: "Solicitar empréstimo" }),
+  ).toBeDisabled();
+  await expect(page.getByText(/Limite de 5 itens atingido/)).toBeVisible();
+  expect((await f.caller.loans.mine()).openCount).toBe(5);
+});
 test("test_ca_02_ca_05_ca_07_ca_08 fluxo completo persiste e exige confirmação", async ({
   page,
 }) => {
@@ -81,7 +169,7 @@ test("test_ca_02_ca_05_ca_07_ca_08 fluxo completo persiste e exige confirmação
   await page
     .getByRole("button", { name: "Solicitar empréstimo", exact: true })
     .click();
-  await expect(page.getByRole("dialog")).toContainText("14 dias");
+  await expect(page.getByRole("dialog")).toContainText("14 dias úteis");
   expect(
     await page
       .getByRole("dialog")
@@ -93,6 +181,25 @@ test("test_ca_02_ca_05_ca_07_ca_08 fluxo completo persiste e exige confirmação
   await expect(
     page.getByRole("heading", { name: "Comigo agora" }),
   ).toBeVisible();
+  const created = await env.db.loan.findFirstOrThrow({
+    where: { userId: f.user.id },
+  });
+  await expect(
+    page.getByText(formatDate(created.dueDate), { exact: false }).first(),
+  ).toBeVisible();
+  await page.goto("/catalogo");
+  const borrowed = page
+    .getByRole("article")
+    .filter({ hasText: f.equipment.patrimony });
+  await expect(borrowed).toContainText("Emprestado");
+  await expect(borrowed.getByRole("link")).toHaveCount(0);
+  await page.getByRole("checkbox", { name: "Só disponíveis" }).check();
+  await expect(borrowed).toHaveCount(0);
+  await page.goto(`/catalogo/${f.equipment.patrimony}`);
+  await expect(
+    page.getByRole("button", { name: "Solicitar empréstimo", exact: true }),
+  ).toBeDisabled();
+  await page.goto("/meus-emprestimos");
   await page.getByRole("button", { name: "Solicitar devolução" }).click();
   await expect(
     page.getByText("Aguardando Operações", { exact: true }),

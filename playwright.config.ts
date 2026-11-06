@@ -1,4 +1,8 @@
 import { defineConfig } from "@playwright/test";
+
+// A URL é usada pelo worker e pelo Next para as imagens interceptadas no teste.
+process.env.SUPABASE_URL = "https://emprestifotosfixture.supabase.co";
+
 export default defineConfig({
   testDir: "./tests/e2e",
   workers: 1,

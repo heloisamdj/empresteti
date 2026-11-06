@@ -24,10 +24,11 @@ e na pasta da spec: spec.md, plan.md, tasks.md.
 1. Liste todos os critérios de aceite da spec, com o ID de cada um.
 2. Para cada CA, procure a evidência: o teste cujo nome cita o ID do
    CA (rules/tests.md) e o trecho de código que ele exercita.
-3. Rode os comandos de teste e build de rules/checks.md. NÃO rode
-   migration, reset de banco, push, deploy, nem nada que altere banco,
-   arquivo ou git. Se os testes apontarem para o banco de produção,
-   não rode: pare e avise.
+3. Confira os resultados dos checks da revisão exata, executados pelo
+   agente principal ou CI em ambiente descartável. Diferencie o que
+   observou do que recebeu. Se faltar resultado de check aplicável,
+   registre PENDENTE. Se houver indicação de banco remoto nos testes,
+   pare e avise. O verificador não executa scripts do projeto.
 4. Confira o "fora de escopo" da spec: existe código fazendo algo que
    a spec não pediu?
 
@@ -37,11 +38,29 @@ e na pasta da spec: spec.md, plan.md, tasks.md.
 - Não interprete CA ambíguo: marque AMBÍGUO e diga o que falta decidir.
 
 ## Resposta (só isto, nada antes nem depois)
+Revisão: <SHA completo do código e da spec revisados>
+
 | CA | evidência (arquivo:linha do teste) | status | observação |
-status: ATENDIDO · REPROVADO · SEM TESTE · AMBÍGUO · OUTRO REPOSITÓRIO
+| --- | --- | --- | --- |
+status: ATENDIDO · REPROVADO · SEM TESTE · AMBÍGUO · PENDENTE · OUTRO REPOSITÓRIO
 (OUTRO REPOSITÓRIO = a prova deste CA vive no back ou no front que não
 está aberto aqui; não conta como falha, mas precisa ser verificado lá)
 
-Checks: <comando> → passou | falhou      (uma linha por comando)
+Na prática, cite a linha exata da declaração de um teste identificado com a
+spec e o CA. Evidências de produção podem complementar esse teste.
+
+Para a prática, escreva uma linha por comando abaixo, sem Markdown nem
+comentário na mesma linha. Use `passou`, `falhou` ou `pendente` após a seta.
+Descreva avisos e limitações em parágrafo separado.
+
+Checks: npm run check:project → <resultado>
+Checks: npm run lint → <resultado>
+Checks: npm run typecheck → <resultado>
+Checks: npm test → <resultado>
+Checks: npm run build → <resultado>
+Checks: npm run test:e2e → <resultado>
+Checks: git diff --check → <resultado>
+Checks: git status --short → <resultado>
+
 Fora de escopo: <lista> | nada encontrado
 Veredito: PRONTA | NÃO PRONTA — <motivo em uma frase>

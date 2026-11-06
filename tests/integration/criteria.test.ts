@@ -3,6 +3,9 @@ import { randomUUID } from "node:crypto";
 import { fixtures, startDatabase } from "../helpers/database";
 import { appRouter } from "../../src/server/api/root";
 import type { Context } from "../../src/server/api/trpc";
+import inventory from "../../skills/imagens-equipamentos/assets/equipamentos.json";
+import { inventorySql } from "../../scripts/prepare-practice-data.mjs";
+import { loanDeadline } from "../../src/server/services/loan-deadline";
 
 let env: Awaited<ReturnType<typeof startDatabase>>;
 let f: Awaited<ReturnType<typeof fixtures>>;
@@ -16,6 +19,120 @@ afterAll(async () => {
   if (env) await env.stop();
 });
 const input = { search: "", availableOnly: false, limit: 7 };
+
+it("spec 002 test_ca_01_ca_02_ca_03_ca_05 carga idempotente, fotos e vínculo do professor", async () => {
+  const manifest = {
+    provider: "pixabay",
+    status: "aprovado",
+    reviewedBy: "Teste local",
+    images: inventory.map(({ patrimonio }, i) => {
+      const hash = (i + 1).toString(16).padStart(64, "0");
+      return {
+        patrimonio,
+        pixabayId: i + 1,
+        author: "Fixture",
+        source: `https://pixabay.com/photos/fixture-${i + 1}/`,
+        license: "https://pixabay.com/service/license-summary/",
+        sha256: hash,
+        storagePath: `${patrimonio}/${hash}.webp`,
+        width: 800,
+        height: 600,
+      };
+    }),
+  };
+  await env.db.$executeRaw`CREATE SCHEMA auth`;
+  await env.db
+    .$executeRaw`CREATE TABLE auth.users (id uuid PRIMARY KEY, email text, email_confirmed_at timestamptz)`;
+  const teacherUid = randomUUID();
+  await env.db
+    .$executeRaw`INSERT INTO auth.users VALUES (${teacherUid}::uuid, 'marcelo.grilo@institutojef.org.br', CURRENT_TIMESTAMP)`;
+  const sql = inventorySql(manifest, { includeTeacher: true });
+  await env.db.$executeRawUnsafe(sql);
+  const where = { tenantId: f.tenant.id, patrimony: { startsWith: "TI-" } };
+  const itemsBefore = await env.db.equipment.findMany({
+    where,
+    orderBy: { patrimony: "asc" },
+  });
+  const categories = {
+    notebook: "NOTEBOOK",
+    monitor: "MONITOR",
+    cabo: "CABLE",
+    camera: "CAMERA",
+  } as const;
+  expect(
+    itemsBefore.map(({ patrimony, name, category, status }) => [
+      patrimony,
+      name,
+      category,
+      status,
+    ]),
+  ).toEqual(
+    inventory.map((item) => [
+      item.patrimonio,
+      item.nome,
+      categories[item.categoria as keyof typeof categories],
+      item.situacao === "manutencao" ? "MAINTENANCE" : "AVAILABLE",
+    ]),
+  );
+  expect(await env.db.loan.count()).toBe(0);
+  const loanData = {
+    tenantId: f.tenant.id,
+    userId: f.user.id,
+    equipmentId: itemsBefore[1].id,
+    borrowedAt: new Date("2026-01-01"),
+    dueDate: new Date("2026-01-15"),
+  };
+  const historical = await env.db.loan.create({
+    data: {
+      ...loanData,
+      returnRequestedAt: new Date("2026-01-06"),
+      returnedAt: new Date("2026-01-07"),
+    },
+  });
+  const active = await env.db.loan.create({
+    data: { ...loanData, borrowedAt: new Date("2026-01-09") },
+  });
+  await env.db.equipment.update({
+    where: {
+      tenantId_patrimony: { tenantId: f.tenant.id, patrimony: "TI-0001" },
+    },
+    data: { status: "OUT_OF_SERVICE" },
+  });
+  await env.db.$executeRawUnsafe(sql);
+  const items = await env.db.equipment.findMany({
+    where,
+    orderBy: { patrimony: "asc" },
+  });
+  expect(items.map((item) => item.patrimony)).toEqual(
+    inventory.map((item) => item.patrimonio),
+  );
+  expect(items.filter((item) => item.category === "CABLE")).toHaveLength(3);
+  expect(
+    items
+      .filter((item) => item.status === "MAINTENANCE")
+      .map((item) => item.patrimony),
+  ).toEqual(["TI-0004", "TI-0007", "TI-0010"]);
+  expect(items[0]?.status).toBe("OUT_OF_SERVICE");
+  expect(new Set(items.map((item) => item.photoPath)).size).toBe(12);
+  expect(await env.db.loan.findMany()).toEqual(
+    expect.arrayContaining([historical, active]),
+  );
+  expect(await env.db.loan.count()).toBe(2);
+  const teacher = await env.db.user.findUniqueOrThrow({
+    where: { authUserId: teacherUid },
+    include: { memberships: true, loans: true },
+  });
+  expect(teacher.memberships).toMatchObject([
+    { tenantId: f.tenant.id, role: "MEMBER" },
+  ]);
+  expect(teacher.loans).toHaveLength(0);
+  expect(() =>
+    inventorySql({ ...manifest, status: "aguarda-revisao-visual-final" }),
+  ).toThrow(/aprovação/);
+  expect(() => inventorySql({ ...manifest, provider: "pexels" })).toThrow(
+    /aprovação/,
+  );
+});
 
 describe("Critérios da spec 001 em PostgreSQL real", () => {
   it("test_ca_01_login exige sessão e vínculo, sem retornar tokens", async () => {
@@ -86,9 +203,9 @@ describe("Critérios da spec 001 em PostgreSQL real", () => {
         .items,
     ).toEqual([]);
   });
-  it("test_ca_04_limite três e solicitações concorrentes", async () => {
+  it("spec 003 test_ca_03_ca_05 quinto pedido permitido e sexto recusado sob concorrência", async () => {
     const items = await Promise.all(
-      [0, 1, 2, 3].map((i) =>
+      [0, 1, 2, 3, 4, 5].map((i) =>
         env.db.equipment.create({
           data: {
             tenantId: f.tenant.id,
@@ -102,10 +219,15 @@ describe("Critérios da spec 001 em PostgreSQL real", () => {
     const results = await Promise.allSettled(
       items.map((item) => f.caller.loans.request({ id: item.id })),
     );
-    expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(3);
-    expect(await env.db.loan.count()).toBe(3);
+    expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(5);
+    const rejected = results.find((result) => result.status === "rejected");
+    expect(rejected).toMatchObject({
+      status: "rejected",
+      reason: { message: "Limite de 5 itens atingido." },
+    });
+    expect(await env.db.loan.count()).toBe(5);
   });
-  it("test_ca_04_atraso bloqueia mesmo com vagas", async () => {
+  it("spec 003 test_ca_03_atraso bloqueia mesmo com vagas", async () => {
     await env.db.loan.create({
       data: {
         tenantId: f.tenant.id,
@@ -127,22 +249,74 @@ describe("Critérios da spec 001 em PostgreSQL real", () => {
       /atraso/,
     );
   });
-  it("test_ca_05_prazo 14 dias, disputa de equipamento e isolamento de request", async () => {
+  it("spec 003 test_ca_02_ca_05_ca_06 disputa entre usuários, prazo persistido e isolamento", async () => {
     await expect(
       f.other.loans.request({ id: f.equipment.id }),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await env.db.membership.create({
+      data: { tenantId: f.tenant.id, userId: f.otherUser.id },
+    });
+    const second = appRouter.createCaller(
+      f.context({
+        ...f.otherIdentity,
+        tenantId: f.tenant.id,
+        tenantName: f.tenant.name,
+      }),
+    );
     const results = await Promise.allSettled([
       f.caller.loans.request({ id: f.equipment.id }),
-      f.caller.loans.request({ id: f.equipment.id }),
+      second.loans.request({ id: f.equipment.id }),
     ]);
     expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
     expect((await f.caller.equipment.list(input)).availableCount).toBe(0);
     const loan = await env.db.loan.findFirstOrThrow();
-    expect(loan.dueDate.getTime() - loan.borrowedAt.getTime()).toBe(
-      14 * 86400000,
+    expect(loan.dueDate).toEqual(loanDeadline(loan.borrowedAt));
+    await env.db.membership.upsert({
+      where: {
+        userId_tenantId: { tenantId: f.otherTenant.id, userId: loan.userId },
+      },
+      create: { tenantId: f.otherTenant.id, userId: loan.userId },
+      update: {},
+    });
+    const crossTenantEquipment = await env.db.equipment.create({
+      data: {
+        tenantId: f.otherTenant.id,
+        category: "CABLE",
+        name: "Cabo",
+        patrimony: "PAT-OUTRO",
+      },
+    });
+    const crossTenantLoan = await env.db.loan.create({
+      data: {
+        tenantId: f.otherTenant.id,
+        equipmentId: crossTenantEquipment.id,
+        userId: loan.userId,
+        borrowedAt: loan.borrowedAt,
+        dueDate: loan.dueDate,
+      },
+    });
+    const [mine, theirs] = await Promise.all([
+      f.caller.loans.mine(),
+      second.loans.mine(),
+    ]);
+    const owner = loan.userId === f.user.id ? mine : theirs;
+    const other = loan.userId === f.user.id ? theirs : mine;
+    expect(owner.openItems).toMatchObject([
+      { id: loan.id, dueDate: loan.dueDate },
+    ]);
+    expect(other.openItems).toHaveLength(0);
+    const crossTenant = appRouter.createCaller(
+      f.context({
+        ...(loan.userId === f.user.id ? f.identity : f.otherIdentity),
+        tenantId: f.otherTenant.id,
+        tenantName: f.otherTenant.name,
+      }),
     );
+    expect(
+      (await crossTenant.loans.mine()).openItems.map(({ id }) => id),
+    ).toEqual([crossTenantLoan.id]);
   });
-  it("test_ca_06_manutencao nunca fica disponível e fora de uso sai do catálogo", async () => {
+  it("spec 003 test_ca_04_manutencao nunca fica disponível e fora de uso sai do catálogo", async () => {
     await env.db.equipment.update({
       where: { id: f.equipment.id },
       data: { status: "MAINTENANCE" },

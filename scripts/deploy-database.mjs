@@ -17,7 +17,7 @@ const tables = [
   "audit_logs",
   "rate_limit_counters",
 ];
-const migrations = ["0001_init", "0002_return_request"];
+const migrations = ["0001_init", "0002_return_request", "0003_equipment_photos"];
 function check(value, message) {
   if (!value) throw new Error(message);
 }
@@ -225,6 +225,11 @@ try {
     "A identidade real do banco/schema difere entre as conexões.",
   );
   const before = await overview(direct);
+  if (mode === "verify")
+    check(
+      migrations.every((name) => before.applied.includes(name)),
+      "Aplique as migrations pendentes pelo job autorizado antes de publicar.",
+    );
   console.log(
     JSON.stringify({
       database: "conectado",
