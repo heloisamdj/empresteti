@@ -93,6 +93,13 @@ raiz do bucket, com zero bytes. É o marcador de pasta usado pelo painel.
    consulta de carga confirmou a identidade correspondente.
    A conta fica reservada para a correção, conforme o enunciado.
 
+   Em 06/11/2026, a responsável informou que ela própria conferiu o acesso
+   da conta do professor pelo site publicado e que o login funcionou. Essa
+   confirmação veio da responsável. O enunciado reserva a conta ao professor,
+   e a demonstração de empréstimos foi feita com a conta separada. Depois do
+   relato, uma consulta em leitura confirmou zero empréstimos do professor,
+   cinco devoluções registradas na conta de teste e nove itens disponíveis.
+
 3. Registre evidências sem credenciais nas pastas das specs. Com o código e
    essas evidências versionados, rode o verificador de cada spec com o mesmo
    SHA, a base da prática e os resultados dos checks locais. Registre os dois

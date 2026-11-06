@@ -1,26 +1,23 @@
-Revisão: 2f4b44f9979ad4455ddd963ae34415dc88709543
+Revisão: 27598f89ffd3a4ac0d27b3a51fc7179345b08af7
 
 | CA | evidência (arquivo:linha do teste) | status | observação |
-|---|---|---|---|
-| CA-01 | `tests/integration/criteria.test.ts:22` | ATENDIDO | A carga local em PostgreSQL descartável produziu exatamente os 12 patrimônios com os nomes, categorias e situações esperados e zero empréstimos. A execução da carga real segue pendente. |
-| CA-02 | `tests/integration/criteria.test.ts:22` | PENDENTE | A reexecução local preservou os equipamentos, o estado alterado, os empréstimos existentes e o vínculo único do professor sintético. O teste verificou 12 caminhos distintos. Falta comprovar que a reexecução não duplica objetos no Storage. |
-| CA-03 | `tests/integration/criteria.test.ts:22` | REPROVADO | O teste usa um manifesto sintético. A triagem real validou nove WebP de 800×600 e seus hashes. As fotos de TI-0007, TI-0011 e TI-0012 foram reprovadas por marca ou texto. O manifesto real segue parcial e sem aprovação em `docs/specs/002-dados-iniciais/revisao-fotos.md:22`. |
-| CA-04 | `tests/e2e/flows.spec.ts:74` | PENDENTE | O E2E verifica as 12 URLs e o crédito com link para o Pixabay usando imagens interceptadas. Falta testar o acesso anônimo às URLs após o upload, conforme `docs/specs/002-dados-iniciais/operacao.md:5`. |
-| CA-05 | `tests/integration/criteria.test.ts:22` | PENDENTE | O teste verifica UID confirmado sintético, vínculo `MEMBER` no tenant `suporte_ti` e zero empréstimos do professor. O E2E usa Marina como identidade de teste. Falta provisionar a conta real e verificar seu login no ambiente publicado. |
+| --- | --- | --- | --- |
+| CA-01 | `tests/integration/criteria.test.ts:23` | ATENDIDO | O teste executa a carga de `scripts/prepare-practice-data.mjs`, compara os 12 patrimônios, nomes, categorias e situações com o inventário e verifica zero empréstimos após a primeira execução. |
+| CA-02 | `tests/integration/criteria.test.ts:23` | ATENDIDO | A segunda execução preserva os 12 patrimônios, o estado alterado, os empréstimos ativo e histórico e o vínculo único do professor. `docs/specs/002-dados-iniciais/operacao.md` registra a conferência de 12 fotos nos caminhos esperados após a repetição da carga. O objeto adicional foi identificado como marcador de pasta vazio. |
+| CA-03 | `tests/integration/criteria.test.ts:23` | ATENDIDO | O teste usa um manifesto sintético e verifica a aceitação da carga e a rejeição de manifesto sem aprovação ou de outro provedor. `skills/imagens-equipamentos/scripts/fotos.mjs` verifica dimensões e unicidade por ID e hash. `docs/specs/002-dados-iniciais/revisao-fotos.md` registra a decodificação dos 12 WebP em 800 × 600, as origens, os autores, a licença, os hashes e a aprovação visual. O manifesto final é local e a evidência fornecida é o registro versionado da revisão. |
+| CA-04 | `tests/e2e/flows.spec.ts:74` | ATENDIDO | O E2E intercepta o Storage e verifica os 12 elementos de imagem e o link do crédito no catálogo. `src/components/screens.tsx` também renderiza o crédito no detalhe com foto. `docs/specs/002-dados-iniciais/revisao-fotos.md` registra HTTP 200 sem sessão para as 12 URLs públicas. |
+| CA-05 | `tests/integration/criteria.test.ts:23` | PENDENTE | O teste simula a identidade confirmada e verifica o vínculo `MEMBER` em `suporte_ti` e zero empréstimos. A responsável confirmou esses dados em produção e usou uma conta separada para a demonstração. O HTTP 200 da página de login comprova que ela está acessível. Falta a confirmação de que o professor conseguiu autenticar-se no site publicado com sua própria conta. |
 
-Os resultados abaixo vieram dos extratos do pacote, sem reexecução independente.
+Checks: npm run check:project → passou
+Checks: npm run lint → passou
+Checks: npm run typecheck → passou
+Checks: npm test → passou
+Checks: npm run build → passou
+Checks: npm run test:e2e → passou
+Checks: git diff --check → passou
+Checks: git status --short → passou
 
-Checks: `npm run check:project` → passou  
-Checks: `npm run lint` → passou com aviso preexistente em `docs/app.js`  
-Checks: `npm run typecheck` → passou  
-Checks: `npm test` → passou, 21 testes  
-Checks: `npm run build` → passou  
-Checks: `npm run test:e2e` → passou, 12 testes com Supabase Auth e imagens interceptados no navegador de teste  
-Checks: `git diff --check` → passou  
-Checks: `git status --short` → pendente, resultado não informado
+A revisão estática conferiu as fontes do snapshot. Os resultados dos checks e as evidências de produção foram recebidos no pacote. Os testes de banco fornecidos usam PostgreSQL descartável via Testcontainers. [Job validate do PR #3](https://github.com/heloisamdj/empresteti/actions/runs/42215078089)
 
-Fora de escopo
-
-Os extratos mostram que os componentes existentes receberam foto e crédito e preservam o ícone quando falta foto. O cadastro pela interface já consta no snapshot e contempla a categoria Cabo prevista na spec. A ausência de um diff com a base limita a confirmação de mudanças em cadastro pela interface, importação de planilha e redesenho. Prazo, sexto empréstimo e isolamento da mesma identidade em dois tenants pertencem à spec 003.
-
-Veredito: NÃO PRONTA. Três fotos precisam ser substituídas e o manifesto final precisa de aprovação. A carga real e sua reexecução, o acesso anônimo às imagens e o login do professor no ambiente publicado seguem pendentes.
+Fora de escopo: nada encontrado na implementação da spec 002.
+Veredito: NÃO PRONTA — O CA-05 aguarda a confirmação do primeiro acesso do professor ao site publicado.

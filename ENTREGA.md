@@ -1,6 +1,6 @@
 # Entrega da prática SDD
 
-**Estado: prática publicada. Fluxo de empréstimo conferido com a conta de teste. Pareceres finais pendentes.**
+**Estado: prática publicada e fluxo de empréstimo conferido. O acesso à conta do professor foi confirmado pela responsável e aguarda nova revisão da spec 002.**
 
 ## Links
 
@@ -40,13 +40,13 @@ O redimensionamento poderia usar uma biblioteca nativa de imagem ou o Playwright
 
 ## 4. Skill de imagens
 
-O [SKILL.md](skills/imagens-equipamentos/SKILL.md) define quando usar e quando pedir revisão. A [referência](skills/imagens-equipamentos/references/fluxo.md) explica a operação, a atribuição e o Storage. O [script](skills/imagens-equipamentos/scripts/fotos.mjs) controla origem, dimensões, IDs, hashes e manifesto. A revisão humana avalia pessoas, marcas, textos e conteúdo de tela. A skill não tem cliente de upload nem credencial de publicação.
+O [SKILL.md](skills/imagens-equipamentos/SKILL.md) orienta o agente e exige aprovação antes de encerrar a seleção. A [referência](skills/imagens-equipamentos/references/fluxo.md) concentra o procedimento de busca, atribuição e entrega ao operador. O [script](skills/imagens-equipamentos/scripts/fotos.mjs) controla origem, dimensões, IDs, hashes e manifesto porque são propriedades verificáveis automaticamente. A responsável revisa pessoas, marcas, textos e conteúdo de tela na imagem final. A skill termina na preparação dos arquivos locais, e a publicação no Storage é feita pela responsável.
 
-O teste local inicial simulou respostas e gerou 12 WebP de 800 × 600, com a mesma saída na repetição e rejeição de conteúdo duplicado. A busca real no Pixabay reuniu 12 fotos, incluindo substituições para TI-0007, TI-0011 e TI-0012. Todos os arquivos reais foram decodificados, e seus IDs, hashes e créditos foram conferidos. A responsável aprovou o lote em 05/11/2026. [Revisão das fotos](docs/specs/002-dados-iniciais/revisao-fotos.md) · [Documentação do Pixabay](https://pixabay.com/api/docs/)
+O teste local inicial simulou respostas e gerou 12 WebP de 800 × 600, com a mesma saída na repetição e rejeição de conteúdo duplicado. Na busca real, sete candidatos foram reprovados após inspeção em 800 × 600 por marca ou texto. As três substituições no lote foram para TI-0007, TI-0011 e TI-0012. Os arquivos finais foram decodificados, e seus IDs, hashes e créditos foram conferidos. A responsável aprovou o lote em 05/11/2026. [Revisão das fotos](docs/specs/002-dados-iniciais/revisao-fotos.md) · [Documentação do Pixabay](https://pixabay.com/api/docs/)
 
 ## 5. Subagente
 
-O [papel nativo](.codex/agents/verificador-spec.toml) roda em sessão nova. O [executor](scripts/review-spec.mjs) prepara um pacote com a spec, o plano, as tarefas, os testes e as fontes da revisão indicada. O verificador lê o pacote versionado e separa o que observou dos resultados recebidos. Como o projeto é monolítico, o mesmo pacote cobre tela, API e persistência. O principal ou o CI executa os testes com PostgreSQL descartável.
+O [papel nativo](.codex/agents/verificador-spec.toml) é acionado após as tarefas da spec e antes da decisão de aceitar o trabalho. Nesse ponto ele pode cruzar cada critério com o código final e os checks da mesma revisão. O [executor](scripts/review-spec.mjs) prepara um pacote com a spec, o plano, as tarefas, os testes e as fontes versionadas. O subagente herda somente a mensagem da sessão nova que contém esse pacote. Assim, os critérios e resultados observados são rastreáveis e ficam separados da conversa de quem implementou. Como o projeto é monolítico, o mesmo pacote cobre tela, API e persistência. O principal ou o CI executa os testes com PostgreSQL descartável.
 
 A execução usa sandbox de leitura e desativa shell, apps, plugins e aprovações. A rodada final recebe também o diff da base escolhida. O [gate no CI](.github/workflows/checks.yml) verifica o parecer no PR da branch da prática e na tag. Exige as duas specs, todos os checks e uma referência a teste de cada CA. Também confere que a revisão corresponde aos arquivos entregues. A proteção do GitHub e a sequência da candidata na Vercel estão no [roteiro de operação](docs/specs/002-dados-iniciais/operacao.md).
 
@@ -60,14 +60,25 @@ Na revisão local `a2f1c63`, a verificação de estrutura, o lint com um aviso p
 
 O parecer da revisão `a2f1c63` apontou testes incompletos na carga e no fluxo de solicitação. Os testes agora comparam todos os patrimônios com a lista, verificam que a carga preserva empréstimos antigos e em aberto, verificam a data e o filtro no navegador e garantem o isolamento para a mesma identidade em dois tenants. A revisão local com Pixabay passou novamente os 21 testes Vitest e os 12 Playwright. A primeira tentativa do novo teste de histórico falhou porque a massa de teste não registrava a solicitação de devolução antes da devolução. O dado de teste foi corrigido para respeitar a restrição existente.
 
-Na rodada `2f4b44f`, o verificador aprovou os critérios locais de empréstimo CA-02 a CA-06. Para o CA-01 da spec 003, pediu asserções no navegador para nome, categoria e situação dos 12 cards. A correção foi acrescentada ao cenário do catálogo. A spec 002 segue pendente por fotos e validação em produção.
+Na rodada `2f4b44f`, o verificador aprovou os critérios locais de empréstimo CA-02 a CA-06. As correções e comprovações dos itens retidos ficaram assim.
+
+| Spec e critério | Motivo registrado pelo verificador | Correção ou evidência |
+| --- | --- | --- |
+| 002 CA-02 | A repetição local não demonstrava os objetos do Storage publicado. | A responsável repetiu a carga e conferiu os 12 caminhos esperados e o marcador vazio do painel. [Operação](docs/specs/002-dados-iniciais/operacao.md) |
+| 002 CA-03 | Três patrimônios ficaram sem fotos aceitáveis após reprovação por marca ou texto. | Substituição e revisão do lote final, com 12 fotos distintas e seus hashes. [Triagem](docs/specs/002-dados-iniciais/revisao-fotos.md) · `4c2fab0` |
+| 002 CA-04 | O teste usava respostas interceptadas e as fotos reais ainda estavam fora do bucket. | Conferência anônima das 12 URLs publicadas e conferência do crédito no catálogo. [Triagem](docs/specs/002-dados-iniciais/revisao-fotos.md) |
+| 002 CA-05 | A evidência anterior usava uma identidade sintética. | A responsável provisionou o professor. A conferência real encontrou identidade confirmada, vínculo de colaborador e zero empréstimos. A demonstração autenticada usou conta separada. [Operação](docs/specs/002-dados-iniciais/operacao.md) |
+| 003 CA-01 | Faltavam asserções de nome, categoria e situação dos 12 cards no navegador. | Asserções acrescentadas ao cenário do catálogo. [Teste](tests/e2e/flows.spec.ts#L74) · `2d53297` |
+
+Na revisão `27598f8`, o job `validate` passou com os testes e a build. O verificador aprovou os seis critérios da spec 003. Na spec 002, registrou quatro critérios atendidos e manteve o CA-05 pendente de evidência do login. Depois dessa rodada, a responsável informou que ela própria conferiu o login do professor. O enunciado reserva essa conta ao professor. A demonstração de empréstimos usou a conta separada, e o professor segue com zero empréstimos. [Execução do CI](https://github.com/heloisamdj/empresteti/actions/runs/42215078089) · [Operação](docs/specs/002-dados-iniciais/operacao.md)
 
 ## 7. Regra posta à prova
 
 O verificador deveria rodar testes e também operar em leitura. Testes e build gravam artefatos, e o teste de integração inicia banco descartável. A revisão separou os papéis. O executor local ou o CI roda os checks, e o verificador avalia o código e os resultados da revisão exata sem executar comandos. A primeira tentativa via shell confirmou a necessidade dessa separação no Windows. [Fluxo SDD](rules/spec-flow.md) · [Contrato](agents/verificador-spec.md)
 
-## 8. Pendências
+## 8. O que ficou de fora e o que faria diferente
 
-- A API do GitHub confirmou que a `main` está desprotegida e que o plano atual não permite aplicar a regra ao repositório privado. O gate foi testado localmente. A execução dos checks no PR da prática e a conferência humana antes do merge seguem pendentes.
-- A responsável executou a migration, publicou as 12 fotos, repetiu a carga e conferiu o vínculo do professor com zero empréstimos. A versão promovida passou pela demonstração de empréstimo no domínio público com a conta de teste. [Evidência da carga](docs/specs/002-dados-iniciais/operacao.md) · [Evidência do empréstimo](docs/specs/003-solicitar-emprestimo/evidencia-producao.md)
-- Conferir no domínio público com conta de teste, registrar as tabelas finais do verificador e marcar `entrega-pratica` após aprovação das duas specs.
+- Importação da planilha, redesenho do catálogo, reservas, notificações e renovação ficaram fora do escopo. A responsável usou o fluxo existente de devolução para liberar os cinco itens da demonstração. A consulta de leitura em 06/11/2026 confirmou cinco devoluções registradas, nove itens disponíveis e zero empréstimos do professor. [Spec 002](docs/specs/002-dados-iniciais/spec.md) · [Spec 003](docs/specs/003-solicitar-emprestimo/spec.md)
+- Em outra entrega, eu simularia as permissões do SQL Editor antes da primeira carga. A tentativa inicial encontrou tabelas da migration pertencentes ao papel de aplicação. A segunda carga precisou tratar a associação temporária de papéis na mesma transação. [Operação](docs/specs/002-dados-iniciais/operacao.md)
+- A barra de prazo decorrido ainda usa a escala anterior de 14 dias corridos. A data exibida e o bloqueio de atraso usam o prazo persistido conforme a spec. Uma revisão visual futura pode calcular o preenchimento pelo intervalo entre a retirada e o vencimento de cada empréstimo. [Tela Meus empréstimos](src/components/screens.tsx#L831) · [Cálculo de prazo](src/server/services/loan-deadline.ts)
+- A API do GitHub confirmou que o plano atual impede a proteção da `main` neste repositório privado. O CI roda o gate no PR e na tag, e a integração depende da conferência dos checks pela responsável. [Fluxo de operação](docs/specs/002-dados-iniciais/operacao.md)
