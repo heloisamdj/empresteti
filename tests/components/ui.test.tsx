@@ -6,8 +6,16 @@ import "@testing-library/jest-dom/vitest";
 import { Button, StatusPill, Dialog } from "../../src/components/ui";
 import { examples } from "../../src/lib/examples";
 import { formatDate } from "../../src/lib/contracts";
+import { loanProgress } from "../../src/lib/loan-progress";
 afterEach(cleanup);
 describe("Componentes Nocturne", () => {
+  it("spec 004 test_ca_03 barra chega a 100% no vencimento mesmo com duração zero", () => {
+    const deadline = new Date("2026-11-27T02:59:59.999Z");
+    expect(
+      loanProgress(deadline, deadline, new Date(deadline.getTime() - 1)),
+    ).toBe(0);
+    expect(loanProgress(deadline, deadline, deadline)).toBe(1);
+  });
   it("test_ca_12_datas seguem dd/mmm no fuso de São Paulo", () => {
     expect(formatDate(new Date("2026-11-04T15:00:00Z"))).toBe("04/nov");
   });

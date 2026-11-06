@@ -169,7 +169,10 @@ test("spec 004 test_ca_03 e test_ca_02_ca_05_ca_07_ca_08 fluxo completo persiste
   await page
     .getByRole("button", { name: "Solicitar empréstimo", exact: true })
     .click();
-  await expect(page.getByRole("dialog")).toContainText("14 dias úteis");
+  const { expectedDueDate } = await f.caller.loans.mine();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toContainText("14 dias úteis");
+  await expect(dialog).toContainText(formatDate(expectedDueDate));
   expect(
     await page
       .getByRole("dialog")
@@ -184,6 +187,7 @@ test("spec 004 test_ca_03 e test_ca_02_ca_05_ca_07_ca_08 fluxo completo persiste
   const created = await env.db.loan.findFirstOrThrow({
     where: { userId: f.user.id },
   });
+  expect(created.dueDate).toEqual(expectedDueDate);
   await expect(
     page.getByText(formatDate(created.dueDate), { exact: false }).first(),
   ).toBeVisible();

@@ -45,6 +45,13 @@ it("spec 004 test_ca_02 exclui a Consciência Negra e usa a data local do pedido
   expect(loanDeadline(new Date("2026-11-05T12:00:00Z")).toISOString()).toBe(
     "2026-11-27T02:59:59.999Z",
   );
+  // Sexta-feira UTC ainda é quinta-feira em São Paulo. O resultado muda um dia.
+  expect(loanDeadline(new Date("2026-11-06T01:30:00Z")).toISOString()).toBe(
+    "2026-11-27T02:59:59.999Z",
+  );
+  expect(loanDeadline(new Date("2026-11-06T03:00:00Z")).toISOString()).toBe(
+    "2026-11-28T02:59:59.999Z",
+  );
   // 01:30 UTC de sábado ainda é sexta-feira em São Paulo.
   expect(loanDeadline(new Date("2026-11-07T01:30:00Z")).toISOString()).toBe(
     "2026-11-28T02:59:59.999Z",
