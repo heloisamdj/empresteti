@@ -75,8 +75,9 @@ try {
     )
     .join("\n");
   const prompt = [
-    "Acione o subagente verificador-spec em contexto novo para esta revisão.",
-    "Passe ao subagente o pacote de fontes, o diff, o SHA e os checks. Não passe outra conversa.",
+    "Esta sessão descartável começa com esta única mensagem. Ela não tem a conversa do agente principal.",
+    "Acione o papel verificador-spec em um subagente novo, com herança desta sessão descartável para receber o pacote abaixo.",
+    "Na chamada de delegação, use a opção de herdar o contexto para transmitir esta mensagem integral. O contexto herdado contém somente esta execução isolada, a spec, o SHA, os checks, o diff e as fontes versionadas.",
     "O verificador lê os arquivos versionados fornecidos abaixo. Ferramentas de shell estão desativadas.",
     `Spec: ${spec}`,
     `SHA: ${revision}`,
@@ -92,6 +93,7 @@ try {
     "Devolva exatamente o parecer do verificador, sem completar lacunas.",
   ].join("\n");
   const output = join(snapshot, "parecer.txt");
+  // O subagente usa o registro desta sessão nova para herdar o pacote.
   const run = spawnSync(
     "codex",
     [
@@ -99,7 +101,6 @@ try {
       "--cd",
       snapshot,
       "--skip-git-repo-check",
-      "--ephemeral",
       "--ignore-user-config",
       "--sandbox",
       "read-only",
@@ -130,9 +131,17 @@ try {
     { input: prompt, encoding: "utf8", maxBuffer: 8 * 1024 * 1024 },
   );
   if (run.error) throw run.error;
-  if (run.status === 0) console.log(readFileSync(output, "utf8").trimEnd());
-  else console.error(`Codex encerrou a revisão com status ${run.status}.`);
-  process.exitCode = run.status ?? 1;
+  if (run.status !== 0) {
+    console.error(`Codex encerrou a revisão com status ${run.status}.`);
+    process.exitCode = run.status ?? 1;
+  } else {
+    const report = readFileSync(output, "utf8").trimEnd();
+    if (!/^Veredito: (?:PRONTA|NÃO PRONTA)(?: — .+)?$/m.test(report)) {
+      console.error("A sessão não devolveu um veredito no formato exigido.");
+      process.exitCode = 1;
+    }
+    console.log(report);
+  }
 } finally {
   const resolved = realpathSync(snapshot);
   if (
